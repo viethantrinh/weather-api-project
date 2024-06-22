@@ -17,6 +17,10 @@ public class LocationService {
     }
 
     public List<Location> getLocations() {
-        return locationRepo.findAllUnTrashedLocation();
+        return locationRepo.findAllUnTrashed();
+    }
+
+    public Location getLocation(String code) {
+        return locationRepo.findByCode(code);
     }
 }

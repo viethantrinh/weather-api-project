@@ -38,7 +38,19 @@ class LocationRepositoryTests {
 
     @Test
     void testGetAllUnTrashedLocationsSuccess() {
-        List<Location> locations = locationRepo.findAllUnTrashedLocation();
+        List<Location> locations = locationRepo.findAllUnTrashed();
         assertThat(locations.size()).isEqualTo(2);
+    }
+
+    @Test
+    void testGetLocationByCodeNotFound() {
+        Location location = locationRepo.findByCode("AAA");
+        assertThat(location).isNull();
+    }
+
+    @Test
+    void testGetLocationByCodeFound() {
+        Location location = locationRepo.findByCode("NYC_USA");
+        assertThat(location).isNotNull();
     }
 }

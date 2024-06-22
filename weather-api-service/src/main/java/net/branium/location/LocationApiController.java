@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.branium.common.Location;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,11 +25,21 @@ public class LocationApiController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Location>> getLocations() {
+    public ResponseEntity<?> getLocations() {
         List<Location> locations = locationService.getLocations();
         if (!locations.isEmpty()) {
             return ResponseEntity.ok(locations);
         }
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping(path = "/{code}")
+    public ResponseEntity<?> getLocation(@PathVariable("code") String code) {
+        Location location = locationService.getLocation(code);
+        if (location != null) {
+            return ResponseEntity.ok(location);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 }

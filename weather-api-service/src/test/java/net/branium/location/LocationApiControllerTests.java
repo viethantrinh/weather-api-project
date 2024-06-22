@@ -18,6 +18,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -115,4 +116,40 @@ class LocationApiControllerTests {
                 .andExpect(jsonPath("$[1].country_code", is(location2.getCountryCode())))
                 .andDo(print());
     }
+
+    @Test
+    void givenAvailableLocationCode_whenGetLocationCalled_thenReturn200OK() throws Exception {
+        Location location = Location.builder()
+                .code("NYC_USA")
+                .cityName("New York City")
+                .regionName("New York")
+                .countryCode("US")
+                .countryName("United State of America")
+                .enabled(true)
+                .build();
+
+        when(locationService.getLocation(any(String.class))).thenReturn(location);
+
+        mockMvc.perform(get(END_POINT_PATH + "/NYC_USA"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is("NYC_USA")))
+                .andDo(print());
+    }
+
+    @Test
+    void givenAvailableLocationCode_whenGetLocationCalledWithPost_thenReturn405MethodNotAllowed() throws Exception {
+        mockMvc.perform(post(END_POINT_PATH + "/NYC_USA"))
+                .andExpect(status().isMethodNotAllowed())
+                .andDo(print());
+    }
+
+    @Test
+    void givenNotAvailableLocationCode_whenGetLocationCalled_thenReturn404NotFound() throws Exception {
+        when(locationService.getLocation(any(String.class))).thenReturn(null);
+        mockMvc.perform(get(END_POINT_PATH + "/NYC_USA"))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+
 }
