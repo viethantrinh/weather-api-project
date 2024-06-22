@@ -11,11 +11,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.lang.annotation.Documented;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,7 +39,7 @@ class LocationApiControllerTests {
     LocationService locationService;
 
     @Test
-    void givenInvalidFieldLocation_whenSendRequest_thenShouldReturn404BadRequest() throws Exception {
+    void givenInvalidFieldLocation_whenCreateLocationCalled_thenShouldReturn404BadRequest() throws Exception {
         Location location = new Location();
         String jsonBody = objectMapper.writeValueAsString(location);
         System.out.println(jsonBody);
@@ -46,7 +50,7 @@ class LocationApiControllerTests {
     }
 
     @Test
-    void givenValidFieldLocation_whenCreated_thenShouldReturn201Created() throws Exception {
+    void givenValidFieldLocation_whenCreateLocationCalled_thenShouldReturn201Created() throws Exception {
         Location location = Location.builder()
                 .code("NYC_USA")
                 .cityName("New York City")
@@ -66,6 +70,49 @@ class LocationApiControllerTests {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code", is("NYC_USA")))
                 .andExpect(header().string("Location", "/v1/locations/NYC_USA"))
+                .andDo(print());
+    }
+
+    @Test
+    void givenEmptyLocationList_whenGetLocationsCalled_thenShouldReturn204NoContent() throws Exception {
+        List<Location> locations = Collections.emptyList();
+        when(locationService.getLocations()).thenReturn(locations);
+        mockMvc.perform(get(END_POINT_PATH))
+                .andExpect(status().isNoContent())
+                .andDo(print());
+    }
+
+    @Test
+    void givenNotEmptyLocationList_whenGetLocationsCalled_thenShouldReturn200OK() throws Exception {
+        Location location1 = Location.builder()
+                .code("NYC_USA")
+                .cityName("New York City")
+                .regionName("New York")
+                .countryCode("US")
+                .countryName("United State of America")
+                .enabled(true)
+                .build();
+
+        Location location2 = Location.builder()
+                .code("DELHI_IN")
+                .cityName("New Delhi")
+                .regionName("Delhi")
+                .countryCode("IN")
+                .countryName("INDIA")
+                .enabled(true)
+                .build();
+
+        List<Location> locations = new ArrayList<>(List.of(location1, location2));
+
+        when(locationService.getLocations()).thenReturn(locations);
+
+        mockMvc.perform(get(END_POINT_PATH))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].code", is(location1.getCode())))
+                .andExpect(jsonPath("$[0].country_code", is(location1.getCountryCode())))
+                .andExpect(jsonPath("$[1].code", is(location2.getCode())))
+                .andExpect(jsonPath("$[1].country_code", is(location2.getCountryCode())))
                 .andDo(print());
     }
 }
