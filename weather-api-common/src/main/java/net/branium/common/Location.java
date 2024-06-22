@@ -4,12 +4,20 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Objects;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Setter
+@Getter
+@Builder
 @Entity
 @Table(name = "locations")
 public class Location {
+    @EqualsAndHashCode.Include
     @Id
     @Column(name = "code", length = 10, nullable = false, unique = true)
     private String code;
@@ -32,73 +40,18 @@ public class Location {
     @Column(name = "trashed", nullable = true)
     private boolean trashed;
 
-    public String getCode() {
-        return code;
+
+    public Location() {
+
     }
 
-    public void setCode(String code) {
+    public Location(String code, String cityName, String regionName, String countryName, String countryCode, boolean enabled, boolean trashed) {
         this.code = code;
-    }
-
-    public String getCityName() {
-        return cityName;
-    }
-
-    public void setCityName(String cityName) {
         this.cityName = cityName;
-    }
-
-    public String getRegionName() {
-        return regionName;
-    }
-
-    public void setRegionName(String regionName) {
         this.regionName = regionName;
-    }
-
-    public String getCountryName() {
-        return countryName;
-    }
-
-    public void setCountryName(String countryName) {
         this.countryName = countryName;
-    }
-
-    public String getCountryCode() {
-        return countryCode;
-    }
-
-    public void setCountryCode(String countryCode) {
         this.countryCode = countryCode;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public boolean isTrashed() {
-        return trashed;
-    }
-
-    public void setTrashed(boolean trashed) {
         this.trashed = trashed;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Location location = (Location) o;
-        return Objects.equals(code, location.code);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(code);
     }
 }
