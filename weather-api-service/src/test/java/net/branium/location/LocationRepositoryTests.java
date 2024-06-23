@@ -42,13 +42,13 @@ class LocationRepositoryTests {
 
     @Test
     void testGetLocationByCodeNotFound() {
-        Location location = locationRepo.findByCode("AAA");
+        Location location = locationRepo.findByCode("AAA").orElse(null);
         assertThat(location).isNull();
     }
 
     @Test
     void testGetLocationByCodeFound() {
-        Location location = locationRepo.findByCode("NYC_USA");
+        Location location = locationRepo.findByCode("NYC_USA").orElse(null);
         assertThat(location).isNotNull();
     }
 
