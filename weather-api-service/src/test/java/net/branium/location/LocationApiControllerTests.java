@@ -20,8 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -151,5 +150,59 @@ class LocationApiControllerTests {
                 .andDo(print());
     }
 
+    @Test
+    void givenNotAvailableLocationCode_whenUpdateLocationCalled_thenShouldReturn404NotFound() throws Exception {
+        Location requestLocation = Location.builder()
+                .code("NYC_USAAA")
+                .cityName("New York City")
+                .regionName("New York")
+                .countryCode("US")
+                .countryName("United State of America")
+                .enabled(true)
+                .build();
 
+        when(locationService.updateLocation(requestLocation)).thenThrow(LocationNotFoundException.class);
+
+        String jsonBody = objectMapper.writeValueAsString(requestLocation);
+
+        mockMvc.perform(put(END_POINT_PATH)
+                .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    void givenInvalidFieldLocation_whenUpdateLocationCalled_thenShouldReturn400BadRequest() throws Exception {
+        Location requestLocation = Location.builder().build();
+
+        String jsonBody = objectMapper.writeValueAsString(requestLocation);
+
+        mockMvc.perform(put(END_POINT_PATH)
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+    @Test
+    void givenAvailableLocation_whenUpdateLocationCalled_theShouldReturn200OK() throws Exception {
+        Location requestLocation = Location.builder()
+                .code("NYC_USA")
+                .cityName("New York City")
+                .regionName("New York")
+                .countryCode("US")
+                .countryName("United State of America")
+                .enabled(true)
+                .build();
+
+        when(locationService.updateLocation(any(Location.class))).thenReturn(requestLocation);
+
+        String locationJson = objectMapper.writeValueAsString(requestLocation);
+
+        mockMvc.perform(put(END_POINT_PATH)
+                        .contentType(MediaType.APPLICATION_JSON).content(locationJson))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is("NYC_USA")))
+                .andDo(print());
+    }
 }

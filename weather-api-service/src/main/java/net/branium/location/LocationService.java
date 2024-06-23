@@ -11,6 +11,7 @@ import java.util.List;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class LocationService {
     final LocationRepository locationRepo;
+    final LocationMapper locationMapper;
 
     public Location createLocation(Location location) {
         return locationRepo.save(location);
@@ -22,5 +23,14 @@ public class LocationService {
 
     public Location getLocation(String code) {
         return locationRepo.findByCode(code);
+    }
+
+    public Location updateLocation(Location location) throws LocationNotFoundException {
+        Location locationFromDB = locationRepo.findByCode(location.getCode());
+        if (locationFromDB == null) {
+            throw new LocationNotFoundException("Can not find location with code: " + location.getCode());
+        }
+        locationMapper.updateLocationFromRequestLocation(location, locationFromDB);
+        return locationRepo.save(locationFromDB);
     }
 }
