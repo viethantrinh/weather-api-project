@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.branium.common.Location;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -12,9 +14,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/v1/locations")
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class LocationApiController {
-    final LocationService locationService;
+    private final LocationService locationService;
+
+    @Autowired
+    public LocationApiController(LocationService locationService) {
+        this.locationService = locationService;
+    }
 
     @PostMapping
     public ResponseEntity<Location> createLocation(@RequestBody @Valid Location location) {
@@ -56,7 +62,7 @@ public class LocationApiController {
         try {
             locationService.deleteLocation(code);
             return ResponseEntity.noContent().build();
-        } catch (Exception e) {
+        } catch (LocationNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LocationRepository extends CrudRepository<Location, String> {
@@ -16,9 +17,9 @@ public interface LocationRepository extends CrudRepository<Location, String> {
     List<Location> findAllUnTrashed();
 
     @Query("SELECT l FROM Location l WHERE l.code = :code AND l.trashed = false")
-    Location findByCode(@Param("code") String code);
+    Optional<Location> findByCode(@Param("code") String code);
 
-    @Query("UPDATE Location l SET l.trashed = true WHERE l.code = ?1")
     @Modifying
+    @Query("UPDATE Location l SET l.trashed = true WHERE l.code = ?1")
     void deleteByCode(String code);
 }
