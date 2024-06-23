@@ -25,12 +25,20 @@ public class LocationService {
         return locationRepo.findByCode(code);
     }
 
-    public Location updateLocation(Location location) throws LocationNotFoundException {
+    public Location updateLocation(Location location) throws Exception {
         Location locationFromDB = locationRepo.findByCode(location.getCode());
         if (locationFromDB == null) {
             throw new LocationNotFoundException("Can not find location with code: " + location.getCode());
         }
         locationMapper.updateLocationFromRequestLocation(location, locationFromDB);
         return locationRepo.save(locationFromDB);
+    }
+
+    public void deleteLocation(String code) throws Exception {
+        Location locationFromDB = locationRepo.findByCode(code);
+        if (locationFromDB == null) {
+            throw new LocationNotFoundException("Can not find location with code: " + code);
+        }
+        locationRepo.deleteByCode(code);
     }
 }

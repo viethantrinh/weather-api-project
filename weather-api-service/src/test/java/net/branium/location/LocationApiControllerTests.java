@@ -1,24 +1,22 @@
 package net.branium.location;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.branium.common.Location;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.lang.annotation.Documented;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -203,6 +201,24 @@ class LocationApiControllerTests {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is("NYC_USA")))
+                .andDo(print());
+    }
+
+    @Test
+    void givenNotAvailableLocationCode_whenDeleteLocationCalled_thenShouldReturn404NotFound() throws Exception {
+        String code = "AAA";
+        doThrow(LocationNotFoundException.class).when(locationService).deleteLocation(code);
+        mockMvc.perform(delete(END_POINT_PATH + "/" + code))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    void givenAvailableLocationCode_whenDeleteLocationCalled_thenShouldReturn204NoContent() throws Exception {
+        String code = "NYC_USA";
+        Mockito.doNothing().when(locationService).deleteLocation(code);
+        mockMvc.perform(delete(END_POINT_PATH + "/" + code))
+                .andExpect(status().isNoContent())
                 .andDo(print());
     }
 }
