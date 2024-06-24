@@ -7,6 +7,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.Rollback;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,4 +61,6 @@ class LocationRepositoryTests {
         locationRepo.deleteByCode(code);
         assertThat(locationRepo.findByCode(code)).isNull();
     }
+
+
 }

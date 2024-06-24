@@ -7,10 +7,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -20,28 +22,33 @@ import lombok.Setter;
 @Entity
 @Table(name = "locations")
 public class Location {
+    @NotNull(message = "Location code must not be null")
+    @Length(min = 2, max = 10, message = "Location code must be between 2 and 10 characters")
     @EqualsAndHashCode.Include
     @Id
     @JsonProperty(value = "code")
     @Column(name = "code", length = 10, nullable = false, unique = true)
-    @NotBlank
     private String code;
 
-    @NotBlank
+    @NotNull(message = "City name must not be null")
+    @Length(min = 3, max = 128, message = "City name must be between 3 and 128 characters")
     @JsonProperty(value = "city_name")
     @Column(name = "city_name", length = 128, nullable = false)
     private String cityName;
 
+    @Length(min = 3, max = 128, message = "Region name must be between 3 and 128 characters")
     @JsonProperty(value = "region_name")
     @Column(name = "region_name", length = 128, nullable = true)
     private String regionName;
 
-    @NotBlank
+    @NotNull(message = "Country name must not be null")
+    @Length(min = 3, max = 64, message = "Country name must be between 3 and 64 characters")
     @JsonProperty(value = "country_name")
     @Column(name = "country_name", length = 64, nullable = false)
     private String countryName;
 
-    @NotBlank
+    @NotNull(message = "Country code must not be null")
+    @Length(min = 1, max = 2, message = "Country code must be between 1 and 2 characters")
     @JsonProperty(value = "country_code")
     @Column(name = "country_code", length = 2, nullable = false)
     private String countryCode;

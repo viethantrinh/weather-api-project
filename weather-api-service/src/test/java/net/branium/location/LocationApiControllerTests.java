@@ -221,4 +221,6 @@ class LocationApiControllerTests {
                 .andExpect(status().isNoContent())
                 .andDo(print());
     }
+
+    // TODO: write test that validate the request body of location entity
 }
