@@ -13,7 +13,7 @@ import java.util.Optional;
 public class RealtimeWeatherService {
     private final RealtimeWeatherRepository realtimeWeatherRepo;
 
-    public RealtimeWeather getRealtimeWeatherByLocation(Location location) throws LocationNotFoundException {
+    public RealtimeWeather getRealtimeWeatherByLocationCountryCodeAndCityName(Location location) throws LocationNotFoundException {
         String countryCode = location.getCountryCode();
         String cityName = location.getCityName();
 
@@ -21,6 +21,16 @@ public class RealtimeWeatherService {
 
         if (realtimeWeatherOpt.isEmpty()) {
             throw new LocationNotFoundException("No location found with the given country code and city name");
+        }
+
+        return realtimeWeatherOpt.get();
+    }
+
+    public RealtimeWeather getRealtimeWeatherByLocationCode(String locationCode) throws LocationNotFoundException {
+        Optional<RealtimeWeather> realtimeWeatherOpt = realtimeWeatherRepo.findByLocationCode(locationCode);
+
+        if (realtimeWeatherOpt.isEmpty()) {
+            throw new LocationNotFoundException("No location found with the given location code");
         }
 
         return realtimeWeatherOpt.get();

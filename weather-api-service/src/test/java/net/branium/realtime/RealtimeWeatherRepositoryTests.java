@@ -61,4 +61,27 @@ class RealtimeWeatherRepositoryTests {
             );
         }
     }
+
+    @Test
+    void testFindByLocationCodeNotFound() {
+        String locationCode = "INVALID_LOCATION_CODE";
+        RealtimeWeather realtimeWeather = realtimeWeatherRepo.findByLocationCode(locationCode).orElse(null);
+        assertNull(realtimeWeather);
+    }
+
+    @Test
+    void testFindByTrashedLocationNotFound() {
+        String locationCode = "NYC_USA";
+        RealtimeWeather realtimeWeather = realtimeWeatherRepo.findByLocationCode(locationCode).orElse(null);
+        assertNull(realtimeWeather);
+    }
+
+    @Test
+    void testFindByLocationCodeFound() {
+        String locationCode = "NYC_USA";
+        RealtimeWeather realtimeWeather = realtimeWeatherRepo.findByLocationCode(locationCode).orElse(null);
+        assertNotNull(realtimeWeather);
+        assertNotNull(realtimeWeather.getLocation());
+        assertEquals("New York City" ,realtimeWeather.getLocation().getCityName());
+    }
 }

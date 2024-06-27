@@ -54,7 +54,7 @@ class RealtimeWeatherApiControllerTests {
     void givenNotAvailableRealtimeWeather_whenGetRealtimeWeatherByIPAddressCalled_thenShouldReturn404NotFound() throws Exception {
         Location location = Location.builder().build();
         when(geolocationService.getLocation(anyString())).thenReturn(location);
-        when(realtimeWeatherService.getRealtimeWeatherByLocation(any(Location.class))).thenThrow(LocationNotFoundException.class);
+        when(realtimeWeatherService.getRealtimeWeatherByLocationCountryCodeAndCityName(any(Location.class))).thenThrow(LocationNotFoundException.class);
         mockMvc.perform(get(END_POINT_PATH))
                 .andExpect(status().isNotFound())
                 .andDo(print());
@@ -99,10 +99,65 @@ class RealtimeWeatherApiControllerTests {
                 .build();
 
         when(geolocationService.getLocation(anyString())).thenReturn(location);
-        when(realtimeWeatherService.getRealtimeWeatherByLocation(any(Location.class))).thenReturn(realtimeWeather);
+        when(realtimeWeatherService.getRealtimeWeatherByLocationCountryCodeAndCityName(any(Location.class))).thenReturn(realtimeWeather);
         when(realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather)).thenReturn(dto);
 
         mockMvc.perform(get(END_POINT_PATH))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.location", is(location.getCityName() + ", " + location.getRegionName() + ", " + location.getCountryName())))
+                .andDo(print());
+    }
+
+
+    @Test
+    void givenNotAvailableLocationCode_whenGetRealtimeWeatherByLocationCodeCalled_thenShouldReturn404NotFound() throws Exception {
+        when(realtimeWeatherService.getRealtimeWeatherByLocationCode(anyString())).thenThrow(LocationNotFoundException.class);
+        mockMvc.perform(get(END_POINT_PATH + "/NON_EXISTS_LOCATION_CODE"))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    void givenAvailableLocationCode_whenGetRealtimeWeatherByLocationCodeCalled_thenShouldReturn200OK() throws Exception {
+        Location location = Location.builder()
+                .code("NYC_USA")
+                .cityName("New York City")
+                .regionName("New York")
+                .countryCode("US")
+                .countryName("United State of America")
+                .enabled(true)
+                .build();
+
+        RealtimeWeather realtimeWeather = RealtimeWeather.builder()
+                .locationCode(location.getCode())
+                .temperature(30)
+                .humidity(20)
+                .precipitation(40)
+                .windSpeed(2)
+                .status("Sunny")
+                .lastUpdated(LocalDateTime.now())
+                .location(location)
+                .build();
+
+        location.setRealtimeWeather(realtimeWeather);
+
+        RealtimeWeatherDTO dto = RealtimeWeatherDTO.builder()
+                .location(realtimeWeather.getLocation().getCityName() + ", "
+                        + realtimeWeather.getLocation().getRegionName() + ", "
+                        + realtimeWeather.getLocation().getCountryName()
+                )
+                .temperature(realtimeWeather.getTemperature())
+                .humidity(realtimeWeather.getHumidity())
+                .precipitation(realtimeWeather.getPrecipitation())
+                .windSpeed(realtimeWeather.getWindSpeed())
+                .status(realtimeWeather.getStatus())
+                .lastUpdated(realtimeWeather.getLastUpdated())
+                .build();
+
+        when(realtimeWeatherService.getRealtimeWeatherByLocationCode(anyString())).thenReturn(realtimeWeather);
+        when(realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather)).thenReturn(dto);
+
+        mockMvc.perform(get(END_POINT_PATH + "/" + location.getCode()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.location", is(location.getCityName() + ", " + location.getRegionName() + ", " + location.getCountryName())))
                 .andDo(print());
