@@ -43,7 +43,7 @@ public class IP2LocationTests {
         IP2Location locator = new IP2Location();
         locator.Open(IP2DBPath);
 
-        String ipAddress = " 42.119.191.53";
+        String ipAddress = "103.48.198.141";
 
         IPResult ipResult = locator.IPQuery(ipAddress);
 

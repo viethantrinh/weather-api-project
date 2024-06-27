@@ -22,11 +22,11 @@ public final class GeolocationService {
         }
     }
 
-    public Location getLocation(String ipAddress) {
+    public Location getLocation(String ipAddress) throws GeolocationException {
         try {
             IPResult ipResult = ip2locator.IPQuery(ipAddress);
             if (!"OK".equals(ipResult.getStatus())) {
-                throw new GeolocationServiceException("Geolocation faild with status: " + ipResult.getStatus());
+                throw new GeolocationException("Geolocation failed with status: " + ipResult.getStatus());
             }
             return Location.builder()
                     .cityName(ipResult.getCity())
@@ -35,7 +35,7 @@ public final class GeolocationService {
                     .countryName(ipResult.getCountryLong())
                     .build();
         } catch (IOException ex) {
-            throw new GeolocationServiceException("IP2Location file is not exists!", ex);
+            throw new GeolocationException("Error querying IP2Location database", ex);
         }
     }
 }

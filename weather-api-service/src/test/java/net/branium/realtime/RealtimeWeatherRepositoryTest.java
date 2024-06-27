@@ -19,6 +19,31 @@ class RealtimeWeatherRepositoryTests {
     RealtimeWeatherRepository realtimeWeatherRepo;
 
     @Test
+    void testFindByCountryCodeAndCityNameFound() {
+        String countryCode = "US";
+        String cityName = "New York City";
+        RealtimeWeather realtimeWeather = realtimeWeatherRepo.findByCountryCodeAndCity(countryCode, cityName).get();
+
+        assertAll(
+                () -> assertNotNull(realtimeWeather),
+                () -> assertNotNull(realtimeWeather.getLocation()),
+                () -> assertEquals("NYC_USA", realtimeWeather.getLocationCode()),
+                () -> assertEquals("Sunny", realtimeWeather.getStatus())
+        );
+    }
+
+    @Test
+    void testFindByCountryCodeAndCityNameNotFound() {
+        String countryCode = "US";
+        String cityName = "Los Angeles";
+        RealtimeWeather realtimeWeather = realtimeWeatherRepo.findByCountryCodeAndCity(countryCode, cityName).orElse(null);
+
+        System.out.println(realtimeWeather);
+
+        assertAll(() -> assertNull(realtimeWeather));
+    }
+
+    @Test
     @Rollback(value = false)
     void testUpdateRealtimeWeatherSuccessful() {
         String realtimeWeatherLocationCode = "DELHI_IN";
