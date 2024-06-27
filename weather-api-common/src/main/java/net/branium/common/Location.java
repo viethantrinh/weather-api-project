@@ -2,10 +2,7 @@ package net.branium.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -61,12 +58,17 @@ public class Location {
     @Column(name = "trashed", nullable = true)
     private boolean trashed;
 
+    @OneToOne(mappedBy = "location", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private RealtimeWeather realtimeWeather;
+
 
     public Location() {
 
     }
 
-    public Location(String code, String cityName, String regionName, String countryName, String countryCode, boolean enabled, boolean trashed) {
+    public Location(String code, String cityName, String regionName, String countryName, String countryCode,
+                    boolean enabled, boolean trashed, RealtimeWeather realtimeWeather) {
         this.code = code;
         this.cityName = cityName;
         this.regionName = regionName;
@@ -74,5 +76,6 @@ public class Location {
         this.countryCode = countryCode;
         this.enabled = enabled;
         this.trashed = trashed;
+        this.realtimeWeather = realtimeWeather;
     }
 }

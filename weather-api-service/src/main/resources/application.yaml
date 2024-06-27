@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/weather_db
-    username: root
-    password: Sohappy212@
+    url: jdbc:oracle:thin:@//localhost:1521/orclpdb
+    username: han_spring_rest
+    password: Sohappy212
 
   jpa:
     hibernate:
@@ -11,5 +11,5 @@ spring:
       hibernate:
         show_sql: true
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.OracleDialect
 

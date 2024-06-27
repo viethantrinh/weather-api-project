@@ -1,5 +1,6 @@
 package net.branium.location;
 
+import jakarta.transaction.Transactional;
 import net.branium.common.Location;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,6 +21,7 @@ public interface LocationRepository extends CrudRepository<Location, String> {
     Optional<Location> findByCode(@Param("code") String code);
 
     @Modifying
+    @Transactional
     @Query("UPDATE Location l SET l.trashed = true WHERE l.code = ?1")
     void deleteByCode(String code);
 }
