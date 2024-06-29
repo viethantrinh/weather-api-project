@@ -227,39 +227,40 @@ class RealtimeWeatherApiControllerTests {
                 .build();
 
         RealtimeWeather realtimeWeather = RealtimeWeather.builder()
-                .locationCode(location.getCode())
-                .temperature(10)
-                .humidity(10)
-                .precipitation(10)
-                .windSpeed(10)
-                .status("Sunny")
-                .lastUpdated(LocalDateTime.of(2024, 10, 10, 10, 10, 10))
-                .location(location)
-                .build();
-
-        location.setRealtimeWeather(realtimeWeather);
-
-        RealtimeWeather realtimeWeatherRequest = RealtimeWeather.builder()
                 .temperature(5)
                 .humidity(5)
                 .precipitation(5)
                 .windSpeed(5)
                 .status("Sunny")
                 .location(location)
+                .lastUpdated(LocalDateTime.now())
                 .build();
 
-//        location.setRealtimeWeather(realtimeWeatherRequest);
-//
-//
-//        String jsonBody = objectMapper.writeValueAsString(realtimeWeatherRequest);
-//
-//        when(realtimeWeatherService.updateRealtimeWeather("NYC_USA", realtimeWeatherRequest)).thenReturn(realtimeWeatherRequest);
-//
-//        mockMvc.perform(put(END_POINT_PATH + "/" + location.getCode())
-//                        .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
-//                .andExpect(status().isBadRequest())
+
+        RealtimeWeatherDTO dto = RealtimeWeatherDTO.builder()
+                .location(realtimeWeather.getLocation().getCityName() + ", "
+                        + realtimeWeather.getLocation().getRegionName() + ", "
+                        + realtimeWeather.getLocation().getCountryName()
+                )
+                .temperature(realtimeWeather.getTemperature())
+                .humidity(realtimeWeather.getHumidity())
+                .precipitation(realtimeWeather.getPrecipitation())
+                .windSpeed(realtimeWeather.getWindSpeed())
+                .status(realtimeWeather.getStatus())
+                .lastUpdated(realtimeWeather.getLastUpdated())
+                .build();
+
+
+        String jsonBody = objectMapper.writeValueAsString(realtimeWeather);
+
+        when(realtimeWeatherService.updateRealtimeWeather(anyString(), any(RealtimeWeather.class))).thenReturn(realtimeWeather);
+        when(realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather)).thenReturn(dto);
+
+        mockMvc.perform(put(END_POINT_PATH + "/" + location.getCode())
+                        .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
+                .andExpect(status().isOk())
 //                .andExpect(jsonPath("$.errors[0]", is("Temperature must be in the range of -50 to 50 Celsius degree")))
-//                .andDo(print());
+                .andDo(print());
     }
 
 

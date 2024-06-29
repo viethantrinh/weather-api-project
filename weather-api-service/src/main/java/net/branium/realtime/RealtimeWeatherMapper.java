@@ -24,7 +24,7 @@ public interface RealtimeWeatherMapper {
 
     default String getLocationStringForRealtimeWeatherDTO(RealtimeWeather realtimeWeather) {
         return realtimeWeather.getLocation().getCityName() + ", " +
-                realtimeWeather.getLocation().getRegionName() + ", " +
+                (realtimeWeather.getLocation().getRegionName() == null ? "" : realtimeWeather.getLocation().getRegionName() + ", ") +
                 realtimeWeather.getLocation().getCountryName();
     }
 }
