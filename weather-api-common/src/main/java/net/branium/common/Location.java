@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -62,13 +63,16 @@ public class Location {
     @JsonIgnore
     private RealtimeWeather realtimeWeather;
 
+    @OneToMany(mappedBy = "id.location", cascade = CascadeType.ALL)
+    private List<HourlyWeather> hourlyWeathers = new ArrayList<>();
+
 
     public Location() {
 
     }
 
     public Location(String code, String cityName, String regionName, String countryName, String countryCode,
-                    boolean enabled, boolean trashed, RealtimeWeather realtimeWeather) {
+                    boolean enabled, boolean trashed, RealtimeWeather realtimeWeather, List<HourlyWeather> hourlyWeathers) {
         this.code = code;
         this.cityName = cityName;
         this.regionName = regionName;
@@ -77,5 +81,6 @@ public class Location {
         this.enabled = enabled;
         this.trashed = trashed;
         this.realtimeWeather = realtimeWeather;
+        this.hourlyWeathers = hourlyWeathers;
     }
 }

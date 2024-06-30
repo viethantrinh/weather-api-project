@@ -1,5 +1,7 @@
 package net.branium.location;
 
+import net.branium.common.HourlyWeather;
+import net.branium.common.HourlyWeatherId;
 import net.branium.common.Location;
 import net.branium.common.RealtimeWeather;
 import org.junit.jupiter.api.Test;
@@ -9,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.Rollback;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,16 +28,16 @@ class LocationRepositoryTests {
     @Rollback(value = false)
     void testCreateOneLocationSuccess() {
         Location location = Location.builder()
-                .code("NYC_USA")
-                .cityName("New York City")
-                .regionName("New York")
-                .countryCode("US")
-                .countryName("United State of America")
+                .code("MBMH_IN")
+                .cityName("Mumbai")
+                .regionName("Maharashtra")
+                .countryCode("IN")
+                .countryName("India")
                 .enabled(true)
                 .build();
         Location savedLocation = locationRepo.save(location);
         assertThat(savedLocation).isNotNull();
-        assertThat(savedLocation.getCode()).isEqualTo("NYC_USA");
+        assertThat(savedLocation.getCode()).isEqualTo("MBMH_IN");
     }
 
     @Test
@@ -90,6 +93,34 @@ class LocationRepositoryTests {
             assertThat(savedLocation.getRealtimeWeather().getTemperature()).isEqualTo(30);
             assertThat(savedLocation.getRealtimeWeather().getLocation()).isEqualTo(location);
         }
+    }
+
+    @Test
+    @Rollback(value = false)
+    void testAddHourlyWeatherData() {
+        Location location = locationRepo.findByCode("DELHI_IN").orElse(null);
+
+        assert location != null;
+        List<HourlyWeather> listHourlyWeather = location.getHourlyWeathers();
+
+        HourlyWeather hourlyForecast1 = HourlyWeather.builder()
+                .id(HourlyWeatherId.builder().location(location).hourOfDay(10).build())
+                .temperature(15)
+                .precipitation(40)
+                .status("Sunny")
+                .build();
+
+        HourlyWeather hourlyForecast2 = HourlyWeather.builder()
+                .id(HourlyWeatherId.builder().location(location).hourOfDay(11).build())
+                .temperature(16)
+                .precipitation(50)
+                .status("Cloudy")
+                .build();
+
+        listHourlyWeather.addAll(List.of(hourlyForecast1, hourlyForecast2));
+
+        Location updatedLocation = locationRepo.save(location);
+        assertThat(updatedLocation.getHourlyWeathers()).isNotEmpty();
     }
 
 
