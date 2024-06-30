@@ -1,5 +1,6 @@
 package net.branium.location;
 
+import lombok.RequiredArgsConstructor;
 import net.branium.common.Location;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -7,15 +8,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class LocationService {
     final LocationRepository locationRepo;
     final LocationMapper locationMapper;
-
-    @Autowired
-    public LocationService(LocationRepository locationRepo, LocationMapper locationMapper) {
-        this.locationRepo = locationRepo;
-        this.locationMapper = locationMapper;
-    }
 
     public Location createLocation(Location location) {
         return locationRepo.save(location);

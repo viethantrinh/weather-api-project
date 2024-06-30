@@ -17,5 +17,13 @@ public class Utilities {
         return ip == null || ip.isEmpty() ? request.getRemoteAddr() : ip;
     }
 
+    public static int getCurrentHour(HttpServletRequest request) {
+        int currentHour = Integer.parseInt(request.getHeader("X-Current-Hour"));
+        if (currentHour >= 0 && currentHour <= 24) {
+            return currentHour;
+        }
+        throw new NumberFormatException();
+    }
+
 
 }

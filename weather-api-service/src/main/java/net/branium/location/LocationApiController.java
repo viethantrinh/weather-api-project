@@ -1,6 +1,7 @@
 package net.branium.location;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import net.branium.common.Location;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,13 +12,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/v1/locations")
+@RequiredArgsConstructor
 public class LocationApiController {
     private final LocationService locationService;
-
-    @Autowired
-    public LocationApiController(LocationService locationService) {
-        this.locationService = locationService;
-    }
 
     @PostMapping
     public ResponseEntity<Location> createLocation(@RequestBody @Valid Location location) {

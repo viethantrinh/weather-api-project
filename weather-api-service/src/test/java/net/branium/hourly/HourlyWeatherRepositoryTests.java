@@ -1,4 +1,4 @@
-package net.branium.hour;
+package net.branium.hourly;
 
 import net.branium.common.HourlyWeather;
 import net.branium.common.HourlyWeatherId;
@@ -60,5 +60,23 @@ class HourlyWeatherRepositoryTests {
 
         HourlyWeather hourlyWeather = hourlyWeatherRepo.findById(hourlyWeatherId).orElse(null);
         assertNull(hourlyWeather);
+    }
+
+    @Test
+    void findByLocationCodeFound() {
+        String locationCode = "DELHI_IN";
+        int currentHour = 10;
+        List<HourlyWeather> listHourlyForecast = hourlyWeatherRepo.findByLocationCodeAndCurrentHour(locationCode, currentHour);
+        System.out.println(listHourlyForecast);
+        assertFalse(listHourlyForecast.isEmpty());
+    }
+
+    @Test
+    void findByLocationCodeNotFound() {
+        String locationCode = "DELHI_IN";
+        int currentHour = 15;
+        List<HourlyWeather> listHourlyForecast = hourlyWeatherRepo.findByLocationCodeAndCurrentHour(locationCode, currentHour);
+        System.out.println(listHourlyForecast);
+        assertTrue(listHourlyForecast.isEmpty());
     }
 }

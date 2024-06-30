@@ -123,5 +123,29 @@ class LocationRepositoryTests {
         assertThat(updatedLocation.getHourlyWeathers()).isNotEmpty();
     }
 
+    @Test
+    void testFindByCountryCodeAndCityNameFound() {
+        String countryCode = "US";
+        String cityName = "New York City";
+        Optional<Location> locationOpt = locationRepo.findByCountryCodeAndCityName(countryCode, cityName);
+        Location location = locationOpt.orElse(null);
+        assertThat(location).isNotNull();
+    }
 
+    @Test
+    void testFindByCountryCodeAndCityNameNotFound() {
+        String countryCode = "INVALID_COUNTRY_CODE";
+        String cityName = "New York City";
+        Optional<Location> locationOpt = locationRepo.findByCountryCodeAndCityName(countryCode, cityName);
+        Location location = locationOpt.orElse(null);
+        assertThat(location).isNull();
+    }
+    @Test
+    void testFindByCountryCodeAndCityNameByTrashedNotFound() {
+        String countryCode = "NYC_USA";
+        String cityName = "New York City";
+        Optional<Location> locationOpt = locationRepo.findByCountryCodeAndCityName(countryCode, cityName);
+        Location location = locationOpt.orElse(null);
+        assertThat(location).isNull();
+    }
 }

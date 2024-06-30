@@ -93,7 +93,7 @@ class LocationApiControllerTests {
 
         Location location2 = Location.builder()
                 .code("DELHI_IN")
-                .cityName("New Delhi")
+                .cityName("Delhi")
                 .regionName("Delhi")
                 .countryCode("IN")
                 .countryName("INDIA")
