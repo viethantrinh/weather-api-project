@@ -6,6 +6,7 @@ import net.branium.GeolocationService;
 import net.branium.common.HourlyWeather;
 import net.branium.common.HourlyWeatherId;
 import net.branium.common.Location;
+import net.branium.location.LocationNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -22,8 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -141,6 +141,90 @@ class HourlyWeatherApiControllerTests {
         when(hourlyWeatherService.getHourlyWeatherByLocationAndCurrentHour(location, 9)).thenReturn(location.getHourlyWeathers());
 
         mockMvc.perform(get(END_POINT_PATH).headers(httpHeaders))
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    void testGetByLocationCodeShouldReturn400BadRequestBecauseHeaderXCurrentHourNotValid() throws Exception {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(X_CURRENT_HOUR, "");
+        String locationCode = "DELHI_IN";
+
+        mockMvc.perform(get(END_POINT_PATH + "/" + locationCode).headers(httpHeaders))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+    @Test
+    void testGetByLocationCodeShouldReturn404NotFound() throws Exception {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(X_CURRENT_HOUR, "9");
+        String locationCode = "NYC_USA";
+        when(hourlyWeatherService.getHourlyWeatherByLocationCodeAndCurrentHour(anyString(), anyInt()))
+                .thenThrow(LocationNotFoundException.class);
+
+        mockMvc.perform(get(END_POINT_PATH + "/" + locationCode).headers(httpHeaders))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    void testGetByLocationCodeShouldReturn204NoContent() throws Exception {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(X_CURRENT_HOUR, "9");
+        String locationCode = "NYC_USA";
+
+        when(hourlyWeatherService.getHourlyWeatherByLocationCodeAndCurrentHour(anyString(), anyInt()))
+                .thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get(END_POINT_PATH + "/" + locationCode).headers(httpHeaders))
+                .andExpect(status().isNoContent())
+                .andDo(print());
+    }
+
+    @Test
+    void testGetByLocationCodeShouldReturn200OK() throws Exception {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(X_CURRENT_HOUR, "9");
+
+        Location location = Location.builder()
+                .code("DELHI_IN")
+                .cityName("New Delhi")
+                .regionName("Delhi")
+                .countryCode("IN")
+                .countryName("INDIA")
+                .enabled(true)
+                .build();
+
+        HourlyWeather hourlyForecast1 = HourlyWeather.builder()
+                .id(HourlyWeatherId.builder().location(location).hourOfDay(10).build())
+                .temperature(13)
+                .precipitation(70)
+                .status("Cloudy")
+                .build();
+
+        HourlyWeather hourlyForecast2 = HourlyWeather.builder()
+                .id(HourlyWeatherId.builder().location(location).hourOfDay(11).build())
+                .temperature(13)
+                .precipitation(70)
+                .status("Sunny")
+                .build();
+
+        HourlyWeather hourlyForecast3 = HourlyWeather.builder()
+                .id(HourlyWeatherId.builder().location(location).hourOfDay(12).build())
+                .temperature(13)
+                .precipitation(70)
+                .status("Rainy")
+                .build();
+
+        location.setHourlyWeathers(List.of(hourlyForecast1, hourlyForecast2, hourlyForecast3));
+
+
+        when(hourlyWeatherService.getHourlyWeatherByLocationCodeAndCurrentHour(location.getCode(), 9))
+                .thenReturn(location.getHourlyWeathers());
+
+        mockMvc.perform(get(END_POINT_PATH + "/" + location.getCode()).headers(httpHeaders))
                 .andExpect(status().isOk())
                 .andDo(print());
     }

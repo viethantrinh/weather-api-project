@@ -22,4 +22,10 @@ public class HourlyWeatherService {
                 .orElseThrow(() -> new LocationNotFoundException("No location found with the given country code and city name"));
         return hourlyWeatherRepo.findByLocationCodeAndCurrentHour(locationFromDB.getCode(), currentHour);
     }
+
+    public List<HourlyWeather> getHourlyWeatherByLocationCodeAndCurrentHour(String locationCode, int currentHour) throws LocationNotFoundException {
+        Location locationFromDB = locationRepo.findByCode(locationCode)
+                .orElseThrow(() -> new LocationNotFoundException("No location found with the given location code"));
+        return hourlyWeatherRepo.findByLocationCodeAndCurrentHour(locationFromDB.getCode(), currentHour);
+    }
 }

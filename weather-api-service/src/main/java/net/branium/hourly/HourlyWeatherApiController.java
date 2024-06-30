@@ -47,6 +47,24 @@ public class HourlyWeatherApiController {
         }
     }
 
+    @GetMapping(path = "/{locationCode}")
+    public ResponseEntity<?> listHourlyForecastByLocationCode(@PathVariable("locationCode") String locationCode, HttpServletRequest request) {
+        try {
+            int clientCurrentHour = Utilities.getCurrentHour(request);
+            List<HourlyWeather> listHourlyWeather = hourlyWeatherService.getHourlyWeatherByLocationCodeAndCurrentHour(locationCode, clientCurrentHour);
+            if (listHourlyWeather.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(toListHourWeatherDTO(listHourlyWeather));
+        } catch (NumberFormatException e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        } catch (LocationNotFoundException e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     private HourlyWeatherListDTO toListHourWeatherDTO(List<HourlyWeather> hourlyWeatherList) {
         Location location = hourlyWeatherList.getFirst().getId().getLocation(); // get the location that these hourly weathers belong to
         return HourlyWeatherListDTO.builder()
