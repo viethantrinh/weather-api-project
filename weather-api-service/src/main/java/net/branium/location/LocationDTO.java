@@ -2,13 +2,8 @@ package net.branium.location;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.hibernate.validator.constraints.Length;
 
 @Data
 @Builder

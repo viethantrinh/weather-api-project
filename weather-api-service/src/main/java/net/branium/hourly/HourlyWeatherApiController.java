@@ -4,18 +4,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.branium.BadRequestException;
-import net.branium.GeolocationException;
-import net.branium.GeolocationService;
 import net.branium.common.HourlyWeather;
 import net.branium.common.Location;
-import net.branium.location.LocationNotFoundException;
+import net.branium.exception.BadRequestException;
+import net.branium.location.GeolocationService;
 import net.branium.util.Utilities;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,12 +36,9 @@ public class HourlyWeatherApiController {
                 return ResponseEntity.noContent().build();
             }
             return ResponseEntity.ok(toListHourWeatherDTO(listHourlyWeather));
-        } catch (NumberFormatException | GeolocationException e) {
+        } catch (NumberFormatException e) {
             log.error(e.getMessage(), e);
             return ResponseEntity.badRequest().build();
-        } catch (LocationNotFoundException e) {
-            log.error(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
         }
     }
 
@@ -60,9 +54,6 @@ public class HourlyWeatherApiController {
         } catch (NumberFormatException e) {
             log.error(e.getMessage(), e);
             return ResponseEntity.badRequest().build();
-        } catch (LocationNotFoundException e) {
-            log.error(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
         }
     }
 
@@ -76,15 +67,11 @@ public class HourlyWeatherApiController {
 
         List<HourlyWeather> hourlyWeatherList = toListHourWeather(hourlyWeatherDTOListRequest);
 
-        try {
-            List<HourlyWeather> updatedHourlyWeatherList = hourlyWeatherService
-                    .updateHourlyWeatherByLocationCode(locationCode, hourlyWeatherList);
-            HourlyWeatherListDTO hourlyWeatherListDTO = toListHourWeatherDTO(updatedHourlyWeatherList);
-            return ResponseEntity.ok(hourlyWeatherListDTO);
-        } catch (LocationNotFoundException ex) {
-            log.info(ex.getMessage(), ex);
-            return ResponseEntity.notFound().build();
-        }
+        List<HourlyWeather> updatedHourlyWeatherList = hourlyWeatherService
+                .updateHourlyWeatherByLocationCode(locationCode, hourlyWeatherList);
+        HourlyWeatherListDTO hourlyWeatherListDTO = toListHourWeatherDTO(updatedHourlyWeatherList);
+        return ResponseEntity.ok(hourlyWeatherListDTO);
+
     }
 
 

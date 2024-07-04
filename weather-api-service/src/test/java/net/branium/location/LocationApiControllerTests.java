@@ -2,11 +2,14 @@ package net.branium.location;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.branium.common.Location;
+import net.branium.exception.LocationNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,6 +26,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LocationApiController.class)
+@ComponentScan(
+        includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LocationMapperImpl.class),
+        useDefaultFilters = false  // This will disable the default behavior of scanning all components
+)
 class LocationApiControllerTests {
 
     private static final String END_POINT_PATH = "/v1/locations";
@@ -35,6 +42,9 @@ class LocationApiControllerTests {
 
     @MockBean
     LocationService locationService;
+
+    @Autowired
+    LocationMapper locationMapper;
 
     @Test
     void givenInvalidFieldLocation_whenCreateLocationCalled_thenShouldReturn404BadRequest() throws Exception {

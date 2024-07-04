@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)

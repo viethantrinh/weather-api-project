@@ -3,14 +3,11 @@ package net.branium.hourly;
 import lombok.RequiredArgsConstructor;
 import net.branium.common.HourlyWeather;
 import net.branium.common.Location;
-import net.branium.location.LocationNotFoundException;
+import net.branium.exception.LocationNotFoundException;
 import net.branium.location.LocationRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +15,7 @@ public class HourlyWeatherService {
     private final HourlyWeatherRepository hourlyWeatherRepo;
     private final LocationRepository locationRepo;
 
-    public List<HourlyWeather> getHourlyWeatherByLocationAndCurrentHour(Location location, int currentHour) throws LocationNotFoundException {
+    public List<HourlyWeather> getHourlyWeatherByLocationAndCurrentHour(Location location, int currentHour) {
         String countryCode = location.getCountryCode();
         String cityName = location.getCityName();
         Location locationFromDB = locationRepo.findByCountryCodeAndCityName(countryCode, cityName)
@@ -26,7 +23,7 @@ public class HourlyWeatherService {
         return hourlyWeatherRepo.findByLocationCodeAndCurrentHour(locationFromDB.getCode(), currentHour);
     }
 
-    public List<HourlyWeather> getHourlyWeatherByLocationCodeAndCurrentHour(String locationCode, int currentHour) throws LocationNotFoundException {
+    public List<HourlyWeather> getHourlyWeatherByLocationCodeAndCurrentHour(String locationCode, int currentHour) {
         Location locationFromDB = locationRepo.findByCode(locationCode)
                 .orElseThrow(() -> new LocationNotFoundException("No location found with the given location code"));
         return hourlyWeatherRepo.findByLocationCodeAndCurrentHour(locationFromDB.getCode(), currentHour);

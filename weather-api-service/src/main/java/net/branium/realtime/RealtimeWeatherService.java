@@ -3,12 +3,11 @@ package net.branium.realtime;
 import lombok.RequiredArgsConstructor;
 import net.branium.common.Location;
 import net.branium.common.RealtimeWeather;
-import net.branium.location.LocationNotFoundException;
+import net.branium.exception.LocationNotFoundException;
 import net.branium.location.LocationRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,29 +16,27 @@ public class RealtimeWeatherService {
     private final LocationRepository locationRepo;
     private final RealtimeWeatherMapper realtimeWeatherMapper;
 
-    public RealtimeWeather getRealtimeWeatherByLocationCountryCodeAndCityName(Location location)
-            throws LocationNotFoundException {
+    public RealtimeWeather getRealtimeWeatherByLocationCountryCodeAndCityName(Location location) {
         String countryCode = location.getCountryCode();
         String cityName = location.getCityName();
         return realtimeWeatherRepo.findByCountryCodeAndCity(countryCode, cityName)
                 .orElseThrow(() -> new LocationNotFoundException("No location found with the given country code and city name"));
     }
 
-    public RealtimeWeather getRealtimeWeatherByLocationCode(String locationCode)
-            throws LocationNotFoundException {
+    public RealtimeWeather getRealtimeWeatherByLocationCode(String locationCode) {
         return realtimeWeatherRepo.findByLocationCode(locationCode)
                 .orElseThrow(() -> new LocationNotFoundException("No location found with the given location code"));
     }
 
     /**
      * Update full realtime weather, not partial update
-     * @param locationCode locationCode
+     *
+     * @param locationCode           locationCode
      * @param realtimeWeatherRequest
      * @return realtime weather object that has been updated
      * @throws LocationNotFoundException if no location found
      */
-    public RealtimeWeather updateRealtimeWeather(String locationCode, RealtimeWeather realtimeWeatherRequest)
-            throws LocationNotFoundException {
+    public RealtimeWeather updateRealtimeWeather(String locationCode, RealtimeWeather realtimeWeatherRequest) {
         Location location = locationRepo.findByCode(locationCode)
                 .orElseThrow(() -> new LocationNotFoundException("No location found with the given code"));
 

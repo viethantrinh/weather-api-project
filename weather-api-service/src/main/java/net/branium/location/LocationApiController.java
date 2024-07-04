@@ -3,7 +3,6 @@ package net.branium.location;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.branium.common.Location;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,22 +44,14 @@ public class LocationApiController {
 
     @PutMapping
     public ResponseEntity<?> updateLocation(@RequestBody @Valid Location location) {
-        try {
-            Location updatedLocation = locationService.updateLocation(location);
-            return ResponseEntity.ok(locationMapper.toLocationDTO(updatedLocation));
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        Location updatedLocation = locationService.updateLocation(location);
+        return ResponseEntity.ok(locationMapper.toLocationDTO(updatedLocation));
+
     }
 
     @DeleteMapping(path = "/{code}")
     public ResponseEntity<?> deleteLocation(@PathVariable("code") String code) {
-        try {
-            locationService.deleteLocation(code);
-            return ResponseEntity.noContent().build();
-        } catch (LocationNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        locationService.deleteLocation(code);
+        return ResponseEntity.noContent().build();
     }
-
 }

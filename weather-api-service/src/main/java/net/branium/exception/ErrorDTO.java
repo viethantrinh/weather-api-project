@@ -1,9 +1,10 @@
-package net.branium;
+package net.branium.exception;
 
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -12,9 +13,6 @@ public class ErrorDTO {
     private LocalDateTime timeStamp;
     private int status;
     private String path;
-    private List<String> errors;
+    private List<String> errors = new ArrayList<>();
 
-    public void addError(String error) {
-        errors.add(error);
-    }
 }

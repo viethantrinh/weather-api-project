@@ -1,4 +1,4 @@
-package net.branium;
+package net.branium.exception;
 
 public class BadRequestException extends RuntimeException {
 

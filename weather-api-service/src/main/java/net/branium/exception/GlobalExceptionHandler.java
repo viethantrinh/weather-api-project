@@ -1,4 +1,4 @@
-package net.branium;
+package net.branium.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -46,6 +46,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorDTO handleBadRequestException(HttpServletRequest request, Exception ex) {
+        LOGGER.error(ex.getMessage(), ex);
+        return ErrorDTO.builder()
+                .timeStamp(LocalDateTime.now())
+                .path(request.getServletPath())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .errors(List.of(HttpStatus.BAD_REQUEST.getReasonPhrase()))
+                .build();
+    }
+
+    @ExceptionHandler(LocationNotFoundException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorDTO handleLocationNotFoundException(HttpServletRequest request, Exception ex) {
+        LOGGER.error(ex.getMessage(), ex);
+        return ErrorDTO.builder()
+                .timeStamp(LocalDateTime.now())
+                .path(request.getServletPath())
+                .status(HttpStatus.NOT_FOUND.value())
+                .errors(List.of(HttpStatus.NOT_FOUND.getReasonPhrase()))
+                .build();
+    }
+
+    @ExceptionHandler(GeolocationException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleGeolocationException(HttpServletRequest request, Exception ex) {
         LOGGER.error(ex.getMessage(), ex);
         return ErrorDTO.builder()
                 .timeStamp(LocalDateTime.now())

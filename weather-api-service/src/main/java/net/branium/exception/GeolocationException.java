@@ -1,6 +1,6 @@
-package net.branium;
+package net.branium.exception;
 
-public class GeolocationException extends Exception {
+public class GeolocationException extends RuntimeException {
 
     public GeolocationException(String message, Throwable cause) {
         super(message, cause);

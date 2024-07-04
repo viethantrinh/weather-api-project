@@ -2,7 +2,7 @@ package net.branium.location;
 
 import lombok.RequiredArgsConstructor;
 import net.branium.common.Location;
-import org.springframework.beans.factory.annotation.Autowired;
+import net.branium.exception.LocationNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,20 +22,20 @@ public class LocationService {
     }
 
     public Location getLocation(String code) {
-        return locationRepo.findByCode(code).orElse(null);
+        return locationRepo.findByCode(code).orElseThrow(() -> new LocationNotFoundException(code));
     }
 
-    public Location updateLocation(Location location) throws Exception {
+    public Location updateLocation(Location location) {
         Location locationFromDB = locationRepo.findByCode(location.getCode())
-                .orElseThrow(() -> new LocationNotFoundException("Can not find location with code: " + location.getCode()));
+                .orElseThrow(() -> new LocationNotFoundException(location.getCode()));
         locationMapper.updateLocationFromRequestLocation(location, locationFromDB);
         return locationRepo.save(locationFromDB);
     }
 
 
-    public void deleteLocation(String code) throws LocationNotFoundException {
+    public void deleteLocation(String code) {
         locationRepo.findByCode(code)
-                .orElseThrow(() -> new LocationNotFoundException("Can not find location with code: " + code));
+                .orElseThrow(() -> new LocationNotFoundException(code));
         locationRepo.deleteByCode(code);
     }
 }

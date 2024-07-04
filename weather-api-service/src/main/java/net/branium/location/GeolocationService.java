@@ -1,9 +1,10 @@
-package net.branium;
+package net.branium.location;
 
 import com.ip2location.IP2Location;
 import com.ip2location.IPResult;
 import lombok.extern.slf4j.Slf4j;
 import net.branium.common.Location;
+import net.branium.exception.GeolocationException;
 import net.branium.util.Constants;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ public final class GeolocationService {
         }
     }
 
-    public Location getLocation(String ipAddress) throws GeolocationException {
+    public Location getLocation(String ipAddress) {
         try {
             IPResult ipResult = ip2locator.IPQuery(ipAddress);
             if (!"OK".equals(ipResult.getStatus())) {

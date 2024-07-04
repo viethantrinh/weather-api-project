@@ -4,11 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.branium.GeolocationException;
-import net.branium.GeolocationService;
 import net.branium.common.Location;
 import net.branium.common.RealtimeWeather;
-import net.branium.location.LocationNotFoundException;
+import net.branium.location.GeolocationService;
 import net.branium.util.Utilities;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,44 +23,27 @@ public class RealtimeWeatherApiController {
     @GetMapping
     public ResponseEntity<?> getRealtimeWeatherByIPAddress(HttpServletRequest request) {
         String clientIPAddress = Utilities.getIPAddress(request);
-        try {
-            Location locationFromIP = geolocationService.getLocation(clientIPAddress);
-            RealtimeWeather realtimeWeather = realtimeWeatherService.getRealtimeWeatherByLocationCountryCodeAndCityName(locationFromIP);
-            RealtimeWeatherDTO realtimeWeatherDTO = realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather);
-            return ResponseEntity.ok(realtimeWeatherDTO);
-        } catch (LocationNotFoundException e) {
-            log.error(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        } catch (GeolocationException e) {
-            log.error(e.getMessage(), e);
-            return ResponseEntity.badRequest().build();
-        }
+        Location locationFromIP = geolocationService.getLocation(clientIPAddress);
+        RealtimeWeather realtimeWeather = realtimeWeatherService.getRealtimeWeatherByLocationCountryCodeAndCityName(locationFromIP);
+        RealtimeWeatherDTO realtimeWeatherDTO = realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather);
+        return ResponseEntity.ok(realtimeWeatherDTO);
     }
 
     @GetMapping(path = "/{locationCode}")
     public ResponseEntity<?> getRealtimeWeatherByLocationCode(@PathVariable("locationCode") String locationCode) {
-        try {
-            RealtimeWeather realtimeWeather = realtimeWeatherService.getRealtimeWeatherByLocationCode(locationCode);
-            RealtimeWeatherDTO realtimeWeatherDTO = realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather);
-            return ResponseEntity.ok(realtimeWeatherDTO);
-        } catch (LocationNotFoundException e) {
-            log.error(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        }
+        RealtimeWeather realtimeWeather = realtimeWeatherService.getRealtimeWeatherByLocationCode(locationCode);
+        RealtimeWeatherDTO realtimeWeatherDTO = realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather);
+        return ResponseEntity.ok(realtimeWeatherDTO);
     }
 
     @PutMapping(path = "/{locationCode}")
     public ResponseEntity<?> updateRealtimeWeatherByLocationCode(@PathVariable("locationCode") String locationCode,
                                                                  @RequestBody @Valid RealtimeWeather realtimeWeatherRequest) {
-        try {
-            RealtimeWeather updatedRealtimeWeather = realtimeWeatherService
-                    .updateRealtimeWeather(locationCode, realtimeWeatherRequest);
-            RealtimeWeatherDTO dto = realtimeWeatherMapper.toRealtimeWeatherDTO(updatedRealtimeWeather);
-            return ResponseEntity.ok(dto);
-        } catch (LocationNotFoundException e) {
-            log.error(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        }
+        RealtimeWeather updatedRealtimeWeather = realtimeWeatherService
+                .updateRealtimeWeather(locationCode, realtimeWeatherRequest);
+        RealtimeWeatherDTO dto = realtimeWeatherMapper.toRealtimeWeatherDTO(updatedRealtimeWeather);
+        return ResponseEntity.ok(dto);
+
     }
 
 }

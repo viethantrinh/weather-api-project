@@ -1,15 +1,12 @@
 package net.branium.realtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.branium.GeolocationException;
-import net.branium.GeolocationService;
 import net.branium.common.Location;
 import net.branium.common.RealtimeWeather;
-import net.branium.location.LocationNotFoundException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
+import net.branium.exception.GeolocationException;
+import net.branium.exception.LocationNotFoundException;
+import net.branium.location.GeolocationService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,9 +18,7 @@ import java.time.LocalDateTime;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
