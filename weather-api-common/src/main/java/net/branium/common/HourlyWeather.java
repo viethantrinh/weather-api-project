@@ -36,4 +36,14 @@ public class HourlyWeather {
         this.precipitation = precipitation;
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "HourlyWeather{" +
+                "id=" + id.getHourOfDay() + " " + id.getLocation() +
+                ", temperature=" + temperature +
+                ", precipitation=" + precipitation +
+                ", status='" + status + '\'' +
+                '}';
+    }
 }
