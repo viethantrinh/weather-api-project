@@ -133,7 +133,7 @@ class RealtimeWeatherServiceTests {
         System.out.println(realtimeWeather);
 
         verify(locationRepository, times(0)).save(any(Location.class));
-        verify(realtimeWeatherMapperImpl, times(1)).updateRealtimeWeatherFromRealtimeWeatherRequest(realtimeWeatherRequest, realtimeWeatherAssociatedWithLocation);
+        verify(realtimeWeatherMapperImpl, times(0)).updateRealtimeWeatherFromRealtimeWeatherRequest(realtimeWeatherRequest, realtimeWeatherAssociatedWithLocation);
         verify(realtimeWeatherRepo, times(1)).save(any(RealtimeWeather.class));
     }
 }

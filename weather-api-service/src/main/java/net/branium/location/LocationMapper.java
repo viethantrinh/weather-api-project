@@ -10,4 +10,5 @@ public interface LocationMapper {
 
     @Mapping(target = "code", ignore = true)
     void updateLocationFromRequestLocation(Location requestLocation, @MappingTarget Location location);
+    LocationDTO toLocationDTO(Location location);
 }

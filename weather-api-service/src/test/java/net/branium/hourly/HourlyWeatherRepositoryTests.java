@@ -15,12 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Rollback(value = true)
 class HourlyWeatherRepositoryTests {
 
     @Autowired HourlyWeatherRepository hourlyWeatherRepo;
 
     @Test
-    @Rollback(value = false)
     void testAddHourlyWeatherSuccessfully() {
         String code = "DELHI_IN";
         int hourOfDay = 12;
@@ -42,7 +42,6 @@ class HourlyWeatherRepositoryTests {
     }
 
     @Test
-    @Rollback(value = false)
     void testDeleteHourlyWeatherSuccessfully() {
         String code = "DELHI_IN";
         int hourOfDay = 12;

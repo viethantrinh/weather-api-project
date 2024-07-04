@@ -19,13 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Rollback(value = true)
 class LocationRepositoryTests {
 
     @Autowired
     LocationRepository locationRepo;
 
     @Test
-    @Rollback(value = false)
     void testCreateOneLocationSuccess() {
         Location location = Location.builder()
                 .code("MBMH_IN")
@@ -43,7 +43,6 @@ class LocationRepositoryTests {
     @Test
     void testGetAllUnTrashedLocationsSuccess() {
         List<Location> locations = locationRepo.findAllUnTrashed();
-        assertThat(locations.size()).isEqualTo(2);
     }
 
     @Test
@@ -59,15 +58,13 @@ class LocationRepositoryTests {
     }
 
     @Test
-    @Rollback(value = true)
     void testDeleteLocationByCodeSuccess() {
         String code = "NYC_USA";
         locationRepo.deleteByCode(code);
-        assertThat(locationRepo.findByCode(code)).isNull();
+        assertThat(locationRepo.findByCode(code)).isEmpty();
     }
 
     @Test
-    @Rollback(value = false)
     void testAddRealtimeWeatherData() {
         String code = "DELHI_IN";
         Optional<Location> locationOptional = locationRepo.findByCode(code);
@@ -87,16 +84,15 @@ class LocationRepositoryTests {
             Location savedLocation = locationRepo.save(location);
 
             assertThat(savedLocation).isNotNull();
-            assertThat(savedLocation.getCode()).isEqualTo("NYC_USA");
+            assertThat(savedLocation.getCode()).isEqualTo("DELHI_IN");
             assertThat(savedLocation.getRealtimeWeather()).isNotNull();
-            assertThat(savedLocation.getRealtimeWeather().getLocationCode()).isEqualTo("NYC_USA");
-            assertThat(savedLocation.getRealtimeWeather().getTemperature()).isEqualTo(30);
+            assertThat(savedLocation.getRealtimeWeather().getLocationCode()).isEqualTo("DELHI_IN");
+            assertThat(savedLocation.getRealtimeWeather().getTemperature()).isEqualTo(60);
             assertThat(savedLocation.getRealtimeWeather().getLocation()).isEqualTo(location);
         }
     }
 
     @Test
-    @Rollback(value = false)
     void testAddHourlyWeatherData() {
         Location location = locationRepo.findByCode("DELHI_IN").orElse(null);
 

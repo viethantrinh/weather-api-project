@@ -74,9 +74,7 @@ public class HourlyWeatherApiController {
             throw new BadRequestException("Hourly forecast is empty");
         }
 
-        hourlyWeatherDTOListRequest.forEach(System.out::println);
         List<HourlyWeather> hourlyWeatherList = toListHourWeather(hourlyWeatherDTOListRequest);
-        hourlyWeatherList.forEach(System.out::println);
 
         try {
             List<HourlyWeather> updatedHourlyWeatherList = hourlyWeatherService

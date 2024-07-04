@@ -15,19 +15,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LocationApiController {
     private final LocationService locationService;
+    private final LocationMapper locationMapper;
 
     @PostMapping
-    public ResponseEntity<Location> createLocation(@RequestBody @Valid Location location) {
+    public ResponseEntity<LocationDTO> createLocation(@RequestBody @Valid Location location) {
         Location createdLocation = locationService.createLocation(location);
-        URI uri = URI.create("/v1/locations/" + createdLocation.getCode());
-        return ResponseEntity.created(uri).body(createdLocation);
+        LocationDTO locationDTO = locationMapper.toLocationDTO(createdLocation);
+        URI uri = URI.create("/v1/locations/" + locationDTO.getCode());
+        return ResponseEntity.created(uri).body(locationDTO);
     }
 
     @GetMapping
     public ResponseEntity<?> getLocations() {
         List<Location> locations = locationService.getLocations();
         if (!locations.isEmpty()) {
-            return ResponseEntity.ok(locations);
+            return ResponseEntity.ok(locations.stream().map(locationMapper::toLocationDTO).toList());
         }
         return ResponseEntity.noContent().build();
     }
@@ -36,7 +38,7 @@ public class LocationApiController {
     public ResponseEntity<?> getLocation(@PathVariable("code") String code) {
         Location location = locationService.getLocation(code);
         if (location != null) {
-            return ResponseEntity.ok(location);
+            return ResponseEntity.ok(locationMapper.toLocationDTO(location));
         }
         return ResponseEntity.notFound().build();
     }
@@ -45,7 +47,7 @@ public class LocationApiController {
     public ResponseEntity<?> updateLocation(@RequestBody @Valid Location location) {
         try {
             Location updatedLocation = locationService.updateLocation(location);
-            return ResponseEntity.ok(updatedLocation);
+            return ResponseEntity.ok(locationMapper.toLocationDTO(updatedLocation));
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
