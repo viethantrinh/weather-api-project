@@ -13,6 +13,6 @@ public class ErrorDTO {
     private LocalDateTime timeStamp;
     private int status;
     private String path;
-    private List<String> errors = new ArrayList<>();
+    private List<String> errors;
 
 }

@@ -9,6 +9,9 @@ import net.branium.util.Constants;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.InputStream;
+
+import static net.branium.util.Constants.IP2DBPATH;
 
 @Slf4j
 @Service
@@ -17,7 +20,10 @@ public final class GeolocationService {
 
     public GeolocationService() {
         try {
-            ip2locator.Open(Constants.IP2DBPATH);
+            InputStream inputStream = getClass().getResourceAsStream(IP2DBPATH);
+            byte[] data = inputStream.readAllBytes();
+            ip2locator.Open(data);
+            inputStream.close();
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }

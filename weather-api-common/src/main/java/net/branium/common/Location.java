@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.ArrayList;
@@ -17,6 +14,8 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "locations")
@@ -66,23 +65,5 @@ public class Location {
     private RealtimeWeather realtimeWeather;
 
     @OneToMany(mappedBy = "id.location", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HourlyWeather> hourlyWeathers = new ArrayList<>();
-
-
-    public Location() {
-
-    }
-
-    public Location(String code, String cityName, String regionName, String countryName, String countryCode,
-                    boolean enabled, boolean trashed, RealtimeWeather realtimeWeather, List<HourlyWeather> hourlyWeathers) {
-        this.code = code;
-        this.cityName = cityName;
-        this.regionName = regionName;
-        this.countryName = countryName;
-        this.countryCode = countryCode;
-        this.enabled = enabled;
-        this.trashed = trashed;
-        this.realtimeWeather = realtimeWeather;
-        this.hourlyWeathers = hourlyWeathers;
-    }
+    private List<HourlyWeather> hourlyWeathers;
 }

@@ -16,5 +16,5 @@ public class HourlyWeatherListDTO {
     private String location;
 
     @JsonProperty(value = "hourly_forecast")
-    private List<HourlyWeatherDTO> hourlyForecast = new ArrayList<>();
+    private List<HourlyWeatherDTO> hourlyForecast;
 }

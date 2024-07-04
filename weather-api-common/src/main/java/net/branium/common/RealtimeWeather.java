@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
@@ -16,6 +13,8 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "weather_realtime")
@@ -62,21 +61,6 @@ public class RealtimeWeather {
     @JoinColumn(name = "location_code")
     @MapsId
     private Location location;
-
-    public RealtimeWeather() {
-    }
-
-    public RealtimeWeather(String locationCode, int temperature, int humidity, int precipitation,
-                           int windSpeed, String status, LocalDateTime lastUpdated, Location location) {
-        this.locationCode = locationCode;
-        this.temperature = temperature;
-        this.humidity = humidity;
-        this.precipitation = precipitation;
-        this.windSpeed = windSpeed;
-        this.status = status;
-        this.lastUpdated = lastUpdated;
-        this.location = location;
-    }
 
     public void setLocation(Location location) {
         this.locationCode = location.getCode();
