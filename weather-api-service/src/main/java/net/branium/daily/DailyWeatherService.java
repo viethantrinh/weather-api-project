@@ -23,4 +23,10 @@ public class DailyWeatherService {
                 .orElseThrow(() -> new LocationNotFoundException(countryCode, cityName));
         return dailyWeatherRepo.findByLocationCode(locationFromDB.getCode());
     }
+
+    public List<DailyWeather> getDailyWeatherByLocationCode(String locationCode) {
+        Location locationFromDB = locationRepo.findByCode(locationCode)
+                .orElseThrow(() -> new LocationNotFoundException(locationCode));
+        return dailyWeatherRepo.findByLocationCode(locationFromDB.getCode());
+    }
 }

@@ -10,6 +10,7 @@ import net.branium.location.GeolocationService;
 import net.branium.util.Utilities;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +30,14 @@ public class DailyWeatherApiController {
         String clientIPAddress = Utilities.getIPAddress(request);
         Location location = geolocationService.getLocation(clientIPAddress);
         List<DailyWeather> dailyWeathersByLocation = dailyWeatherService.getDailyWeatherByLocation(location);
+        return dailyWeathersByLocation.isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(toDailyWeatherListDTO(dailyWeathersByLocation));
+    }
+
+    @GetMapping(path = "/{locationCode}")
+    public ResponseEntity<DailyWeatherListDTO> listDailyForecastByLocationCode(@PathVariable("locationCode") String locationCode) {
+        List<DailyWeather> dailyWeathersByLocation = dailyWeatherService.getDailyWeatherByLocationCode(locationCode);
         return dailyWeathersByLocation.isEmpty()
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(toDailyWeatherListDTO(dailyWeathersByLocation));
