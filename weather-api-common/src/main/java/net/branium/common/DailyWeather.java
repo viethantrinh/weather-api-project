@@ -6,25 +6,28 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
 
-@Setter
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "weather_hourly")
 @Entity
-public class HourlyWeather {
+@Table(name = "weather_daily")
+public class DailyWeather {
     @EqualsAndHashCode.Include
     @EmbeddedId
-    private HourlyWeatherId id;
+    private DailyWeatherId id;
 
-    @Column(name = "temperature")
-    private int temperature;
+    @Column(name = "min_temp")
+    private int minTemp;
+
+    @Column(name = "max_temp")
+    private int maxTemp;
 
     @Column(name = "precipitation")
     private int precipitation;
 
-    @Column(length = 50)
+    @Column(name = "status")
     private String status;
 }

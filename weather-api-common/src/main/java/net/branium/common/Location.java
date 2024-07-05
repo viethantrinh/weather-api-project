@@ -66,4 +66,7 @@ public class Location {
 
     @OneToMany(mappedBy = "id.location", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HourlyWeather> hourlyWeathers;
+
+    @OneToMany(mappedBy = "id.location", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DailyWeather> dailyWeathers;
 }

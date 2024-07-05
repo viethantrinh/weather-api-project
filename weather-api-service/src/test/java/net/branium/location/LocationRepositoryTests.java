@@ -1,13 +1,11 @@
 package net.branium.location;
 
-import net.branium.common.HourlyWeather;
-import net.branium.common.HourlyWeatherId;
-import net.branium.common.Location;
-import net.branium.common.RealtimeWeather;
+import net.branium.common.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.Rollback;
 
 import java.time.LocalDateTime;
@@ -135,6 +133,7 @@ class LocationRepositoryTests {
         Location location = locationOpt.orElse(null);
         assertThat(location).isNull();
     }
+
     @Test
     void testFindByCountryCodeAndCityNameByTrashedNotFound() {
         String countryCode = "NYC_USA";
@@ -143,4 +142,48 @@ class LocationRepositoryTests {
         Location location = locationOpt.orElse(null);
         assertThat(location).isNull();
     }
+
+    @Test
+    void testAddDailyWeatherDataSuccess() {
+        Location location = locationRepo.findByCode("DELHI_IN").orElse(null);
+
+        assert location != null;
+        List<DailyWeather> dailyWeatherList = location.getDailyWeathers();
+
+        DailyWeather dailyWeather1 = DailyWeather
+                .builder()
+                .id(DailyWeatherId.builder().dayOfMonth(12).month(2).location(location).build())
+                .minTemp(20)
+                .maxTemp(30)
+                .precipitation(40)
+                .status("Cloudy")
+                .build();
+
+
+        DailyWeather dailyWeather2 = DailyWeather
+                .builder()
+                .id(DailyWeatherId.builder().dayOfMonth(15).month(2).location(location).build())
+                .minTemp(15)
+                .maxTemp(27)
+                .precipitation(30)
+                .status("Rainy")
+                .build();
+
+        dailyWeatherList.addAll(List.of(dailyWeather1, dailyWeather2));
+
+        Location updatedLocation = locationRepo.save(location);
+        assertThat(updatedLocation.getHourlyWeathers()).isNotEmpty();
+    }
+
+    @Test
+    void testDeleteDailyWeatherSuccess() {
+        Location location = locationRepo.findByCode("DELHI_IN").orElse(null);
+        assert location != null;
+        List<DailyWeather> dailyWeatherList = location.getDailyWeathers();
+        dailyWeatherList.clear();
+        Location updatedLocation = locationRepo.save(location);
+        assertThat(updatedLocation.getDailyWeathers()).isEmpty();
+    }
+
+
 }
