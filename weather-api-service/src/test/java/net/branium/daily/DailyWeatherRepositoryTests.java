@@ -69,20 +69,22 @@ class DailyWeatherRepositoryTests {
                 .status("Cloudy")
                 .build();
 
-
-        DailyWeather dailyWeather2 = DailyWeather
-                .builder()
-                .id(DailyWeatherId.builder().dayOfMonth(10).month(2).location(location).build())
-                .minTemp(15)
-                .maxTemp(27)
-                .precipitation(30)
-                .status("Rainy")
-                .build();
-
         dailyWeatherRepo.delete(dailyWeather1);
-
         DailyWeather dailyWeatherDeleted = dailyWeatherRepo.findById(dailyWeather1.getId()).orElse(null);
-
         assertThat(dailyWeatherDeleted).isNull();
+    }
+
+    @Test
+    void testFindByLocationCodeFound() {
+        List<DailyWeather> dailyWeatherList = dailyWeatherRepo.findByLocationCode("DELHI_IN");
+        System.out.println(dailyWeatherList);
+        assertThat(dailyWeatherList).isNotEmpty();
+    }
+
+    @Test
+    void testFindByLocationCodeNotFound() {
+        List<DailyWeather> dailyWeatherList = dailyWeatherRepo.findByLocationCode("INVALID_LOCATION_CODE");
+        System.out.println(dailyWeatherList);
+        assertThat(dailyWeatherList).isEmpty();
     }
 }

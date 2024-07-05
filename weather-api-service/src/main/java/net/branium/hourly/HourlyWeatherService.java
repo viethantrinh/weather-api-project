@@ -19,20 +19,20 @@ public class HourlyWeatherService {
         String countryCode = location.getCountryCode();
         String cityName = location.getCityName();
         Location locationFromDB = locationRepo.findByCountryCodeAndCityName(countryCode, cityName)
-                .orElseThrow(() -> new LocationNotFoundException("No location found with the given country code and city name"));
+                .orElseThrow(() -> new LocationNotFoundException(countryCode, cityName));
         return hourlyWeatherRepo.findByLocationCodeAndCurrentHour(locationFromDB.getCode(), currentHour);
     }
 
     public List<HourlyWeather> getHourlyWeatherByLocationCodeAndCurrentHour(String locationCode, int currentHour) {
         Location locationFromDB = locationRepo.findByCode(locationCode)
-                .orElseThrow(() -> new LocationNotFoundException("No location found with the given location code"));
+                .orElseThrow(() -> new LocationNotFoundException(locationCode));
         return hourlyWeatherRepo.findByLocationCodeAndCurrentHour(locationFromDB.getCode(), currentHour);
     }
 
     public List<HourlyWeather> updateHourlyWeatherByLocationCode(String locationCode,
                                                                  List<HourlyWeather> hourlyWeatherListRequest) throws LocationNotFoundException {
         Location locationFromDB = locationRepo.findByCode(locationCode)
-                .orElseThrow(() -> new LocationNotFoundException("No location found with the given location code"));
+                .orElseThrow(() -> new LocationNotFoundException(locationCode));
         for (HourlyWeather item : hourlyWeatherListRequest) { // set location to the hourly weather list request
             item.getId().setLocation(locationFromDB);
         }
