@@ -1,6 +1,7 @@
 package net.branium.daily;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.branium.common.DailyWeather;
@@ -9,10 +10,8 @@ import net.branium.hourly.HourlyWeatherDTO;
 import net.branium.location.GeolocationService;
 import net.branium.util.Utilities;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -43,9 +42,18 @@ public class DailyWeatherApiController {
                 : ResponseEntity.ok(toDailyWeatherListDTO(dailyWeathersByLocation));
     }
 
+    @PutMapping(path = "/{locationCode}")
+    @Validated
+    public ResponseEntity<DailyWeatherListDTO> updateDailyForecast(@PathVariable("locationCode") String locationCode,
+                                                                   @RequestBody @Valid List<DailyWeatherDTO> dailyWeatherDTOListRequest) {
+        if (dailyWeatherDTOListRequest.isEmpty()) return ResponseEntity.badRequest().build();
+        List<DailyWeather> dailyWeatherListUpdated = dailyWeatherService
+                .updateDailyWeatherByLocationCode(locationCode, toDailyWeatherList(dailyWeatherDTOListRequest));
+        return ResponseEntity.ok(toDailyWeatherListDTO(dailyWeatherListUpdated));
+    }
+
     private DailyWeatherListDTO toDailyWeatherListDTO(List<DailyWeather> dailyWeatherList) {
         Location location = dailyWeatherList.getFirst().getId().getLocation();
-
         return DailyWeatherListDTO
                 .builder()
                 .location(location.getCityName() + ", " +
@@ -53,5 +61,12 @@ public class DailyWeatherApiController {
                         location.getCountryName())
                 .dailyWeatherDTOList(dailyWeatherList.stream().map(dailyWeatherMapper::toDailyWeatherDTO).toList())
                 .build();
+    }
+
+    private List<DailyWeather> toDailyWeatherList(List<DailyWeatherDTO> dailyWeatherDTOList) {
+        return dailyWeatherDTOList
+                .stream()
+                .map(dailyWeatherMapper::toDailyWeather)
+                .toList();
     }
 }

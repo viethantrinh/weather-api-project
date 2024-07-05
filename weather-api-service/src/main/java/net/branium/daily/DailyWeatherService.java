@@ -29,4 +29,12 @@ public class DailyWeatherService {
                 .orElseThrow(() -> new LocationNotFoundException(locationCode));
         return dailyWeatherRepo.findByLocationCode(locationFromDB.getCode());
     }
+
+    public List<DailyWeather> updateDailyWeatherByLocationCode(String locationCode, List<DailyWeather> dailyWeatherList) {
+        Location locationFromDB = locationRepo.findByCode(locationCode)
+                .orElseThrow(() -> new LocationNotFoundException(locationCode));
+        dailyWeatherList.forEach(dailyWeather -> dailyWeather.getId().setLocation(locationFromDB));
+        locationFromDB.getDailyWeathers().removeIf(dailyWeather -> !dailyWeatherList.contains(dailyWeather));
+        return (List<DailyWeather>) dailyWeatherRepo.saveAll(dailyWeatherList);
+    }
 }

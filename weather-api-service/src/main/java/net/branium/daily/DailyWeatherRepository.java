@@ -11,6 +11,18 @@ import java.util.List;
 @Repository
 public interface DailyWeatherRepository extends CrudRepository<DailyWeather, DailyWeatherId> {
 
-    @Query("SELECT d FROM DailyWeather d WHERE d.id.location.code = ?1 AND d.id.location.trashed = false ORDER BY d.id.month, d.id.dayOfMonth")
+    @Query("""
+        SELECT d FROM DailyWeather d
+        WHERE
+            d.id.location.code = ?1
+            AND
+            d.id.location.trashed = false
+        ORDER BY
+            d.id.month,
+            d.id.dayOfMonth
+        """)
     List<DailyWeather> findByLocationCode(String locationCode);
+
+
+
 }

@@ -12,8 +12,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Entity
 @Table(name = "weather_daily")
+@Entity
 public class DailyWeather {
     @EqualsAndHashCode.Include
     @EmbeddedId
@@ -28,6 +28,6 @@ public class DailyWeather {
     @Column(name = "precipitation")
     private int precipitation;
 
-    @Column(name = "status")
+    @Column(name = "status", length = 50)
     private String status;
 }

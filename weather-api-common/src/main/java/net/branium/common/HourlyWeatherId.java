@@ -13,8 +13,8 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Embeddable
 @EqualsAndHashCode
+@Embeddable
 public class HourlyWeatherId implements Serializable {
 
     @Column(name = "hour_of_day")

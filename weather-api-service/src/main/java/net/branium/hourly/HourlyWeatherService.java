@@ -30,7 +30,7 @@ public class HourlyWeatherService {
     }
 
     public List<HourlyWeather> updateHourlyWeatherByLocationCode(String locationCode,
-                                                                 List<HourlyWeather> hourlyWeatherListRequest) throws LocationNotFoundException {
+                                                                 List<HourlyWeather> hourlyWeatherListRequest) {
         Location locationFromDB = locationRepo.findByCode(locationCode)
                 .orElseThrow(() -> new LocationNotFoundException(locationCode));
         for (HourlyWeather item : hourlyWeatherListRequest) { // set location to the hourly weather list request
