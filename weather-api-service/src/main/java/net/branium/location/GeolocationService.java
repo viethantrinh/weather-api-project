@@ -19,11 +19,11 @@ public final class GeolocationService {
     private final IP2Location ip2locator = new IP2Location();
 
     public GeolocationService() {
-        try {
-            InputStream inputStream = getClass().getResourceAsStream(IP2DBPATH);
-            byte[] data = inputStream.readAllBytes();
-            ip2locator.Open(data);
-            inputStream.close();
+        try (InputStream inputStream = getClass().getResourceAsStream(IP2DBPATH);) {
+            if (inputStream != null) {
+                byte[] data = inputStream.readAllBytes();
+                ip2locator.Open(data);
+            }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }

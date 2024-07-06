@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,6 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RealtimeWeatherApiController.class)
+@ComponentScan(
+        includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = RealtimeWeatherMapperImpl.class),
+        useDefaultFilters = false
+)
 class RealtimeWeatherApiControllerTests {
     private static final String END_POINT_PATH = "/v1/realtime";
 
@@ -35,7 +41,7 @@ class RealtimeWeatherApiControllerTests {
     @Autowired
     ObjectMapper objectMapper;
 
-    @MockBean
+    @Autowired
     RealtimeWeatherMapper realtimeWeatherMapper;
 
     @MockBean
@@ -105,7 +111,6 @@ class RealtimeWeatherApiControllerTests {
 
         when(geolocationService.getLocation(anyString())).thenReturn(location);
         when(realtimeWeatherService.getRealtimeWeatherByLocationCountryCodeAndCityName(any(Location.class))).thenReturn(realtimeWeather);
-        when(realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather)).thenReturn(dto);
 
         mockMvc.perform(get(END_POINT_PATH))
                 .andExpect(status().isOk())
@@ -161,7 +166,6 @@ class RealtimeWeatherApiControllerTests {
                 .build();
 
         when(realtimeWeatherService.getRealtimeWeatherByLocationCode(anyString())).thenReturn(realtimeWeather);
-        when(realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather)).thenReturn(dto);
 
         mockMvc.perform(get(END_POINT_PATH + "/" + location.getCode()))
                 .andExpect(status().isOk())
@@ -171,7 +175,7 @@ class RealtimeWeatherApiControllerTests {
 
     @Test
     void givenNotAvailableLocationCode_whenUpdateRealtimeWeatherByLocationCodeCalled_thenShouldReturn404NotFound() throws Exception {
-        RealtimeWeather realtimeWeatherRequest = RealtimeWeather.builder()
+        RealtimeWeatherDTO realtimeWeatherRequest = RealtimeWeatherDTO.builder()
                 .temperature(30)
                 .humidity(20)
                 .precipitation(40)
@@ -221,40 +225,32 @@ class RealtimeWeatherApiControllerTests {
                 .trashed(false)
                 .build();
 
+
+        RealtimeWeatherDTO realtimeWeatherDTO = RealtimeWeatherDTO.builder()
+                .temperature(10)
+                .humidity(10)
+                .precipitation(10)
+                .windSpeed(10)
+                .status("Rainy")
+                .build();
+
         RealtimeWeather realtimeWeather = RealtimeWeather.builder()
-                .temperature(5)
-                .humidity(5)
-                .precipitation(5)
-                .windSpeed(5)
-                .status("Sunny")
+                .temperature(realtimeWeatherDTO.getTemperature())
+                .humidity(realtimeWeatherDTO.getHumidity())
+                .precipitation(realtimeWeatherDTO.getPrecipitation())
+                .windSpeed(realtimeWeatherDTO.getWindSpeed())
+                .status(realtimeWeatherDTO.getStatus())
                 .location(location)
                 .lastUpdated(LocalDateTime.now())
                 .build();
 
-
-        RealtimeWeatherDTO dto = RealtimeWeatherDTO.builder()
-                .location(realtimeWeather.getLocation().getCityName() + ", "
-                        + realtimeWeather.getLocation().getRegionName() + ", "
-                        + realtimeWeather.getLocation().getCountryName()
-                )
-                .temperature(realtimeWeather.getTemperature())
-                .humidity(realtimeWeather.getHumidity())
-                .precipitation(realtimeWeather.getPrecipitation())
-                .windSpeed(realtimeWeather.getWindSpeed())
-                .status(realtimeWeather.getStatus())
-                .lastUpdated(realtimeWeather.getLastUpdated())
-                .build();
-
-
-        String jsonBody = objectMapper.writeValueAsString(realtimeWeather);
+        String jsonBody = objectMapper.writeValueAsString(realtimeWeatherDTO);
 
         when(realtimeWeatherService.updateRealtimeWeather(anyString(), any(RealtimeWeather.class))).thenReturn(realtimeWeather);
-        when(realtimeWeatherMapper.toRealtimeWeatherDTO(realtimeWeather)).thenReturn(dto);
 
         mockMvc.perform(put(END_POINT_PATH + "/" + location.getCode())
                         .contentType(MediaType.APPLICATION_JSON).content(jsonBody))
                 .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.errors[0]", is("Temperature must be in the range of -50 to 50 Celsius degree")))
                 .andDo(print());
     }
 
