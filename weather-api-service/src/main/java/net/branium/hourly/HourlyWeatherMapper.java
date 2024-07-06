@@ -11,7 +11,6 @@ public interface HourlyWeatherMapper {
     @Mapping(target = "hourOfDay", source = "id.hourOfDay")
     HourlyWeatherDTO toHourWeatherDTO(HourlyWeather hourlyWeather);
 
-    @Mapping(target = "id.hourOfDay",
-            expression = "java(hourlyWeatherDTO.getHourOfDay() != 0 ? hourlyWeatherDTO.getHourOfDay() : 0)")
+    @Mapping(target = "id.hourOfDay", source = "hourOfDay")
     HourlyWeather toHourWeather(HourlyWeatherDTO hourlyWeatherDTO);
 }

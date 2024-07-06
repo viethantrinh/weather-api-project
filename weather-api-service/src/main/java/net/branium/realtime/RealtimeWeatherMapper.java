@@ -17,7 +17,6 @@ public interface RealtimeWeatherMapper {
 
     @Mapping(target = "location", ignore = true)
     @Mapping(target = "locationCode", ignore = true)
-    @Mapping(target = "lastUpdated", ignore = true)
     RealtimeWeather toRealtimeWeather(RealtimeWeatherDTO realtimeWeatherDTO);
 
 
