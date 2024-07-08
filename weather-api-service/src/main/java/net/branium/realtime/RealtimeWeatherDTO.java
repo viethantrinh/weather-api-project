@@ -2,17 +2,20 @@ package net.branium.realtime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class RealtimeWeatherDTO {
+@JsonPropertyOrder({"location", "temperature", "humidity", "precipitation", "status", "windSpeed", "lastUpdated"})
+public class RealtimeWeatherDTO extends RepresentationModel<RealtimeWeatherDTO> {
     @JsonProperty(value = "location")
     private String location;
 
