@@ -6,8 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.branium.common.HourlyWeather;
 import net.branium.common.Location;
+import net.branium.daily.DailyWeatherApiController;
 import net.branium.exception.BadRequestException;
+import net.branium.full.FullWeatherApiController;
 import net.branium.location.GeolocationService;
+import net.branium.realtime.RealtimeWeatherApiController;
 import net.branium.util.Utilities;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -15,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Slf4j
 @RestController
@@ -35,7 +41,9 @@ public class HourlyWeatherApiController {
             if (listHourlyWeather.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
-            return ResponseEntity.ok(toListHourWeatherDTO(listHourlyWeather));
+            return ResponseEntity.ok(
+                    addLinkByIPAddress(toListHourWeatherDTO(listHourlyWeather))
+            );
         } catch (NumberFormatException e) {
             log.error(e.getMessage(), e);
             return ResponseEntity.badRequest().build();
@@ -50,7 +58,9 @@ public class HourlyWeatherApiController {
             if (listHourlyWeather.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
-            return ResponseEntity.ok(toListHourWeatherDTO(listHourlyWeather));
+            return ResponseEntity.ok(
+                    addLinkByLocationCode(toListHourWeatherDTO(listHourlyWeather), locationCode)
+            );
         } catch (NumberFormatException e) {
             log.error(e.getMessage(), e);
             return ResponseEntity.badRequest().build();
@@ -70,8 +80,42 @@ public class HourlyWeatherApiController {
         List<HourlyWeather> updatedHourlyWeatherList = hourlyWeatherService
                 .updateHourlyWeatherByLocationCode(locationCode, hourlyWeatherList);
         HourlyWeatherListDTO hourlyWeatherListDTO = toListHourWeatherDTO(updatedHourlyWeatherList);
-        return ResponseEntity.ok(hourlyWeatherListDTO);
+        return ResponseEntity.ok(
+                addLinkByLocationCode(hourlyWeatherListDTO, locationCode)
+        );
 
+    }
+
+    private HourlyWeatherListDTO addLinkByIPAddress(HourlyWeatherListDTO hourlyWeatherListDTO) {
+        hourlyWeatherListDTO.add(
+                linkTo(methodOn(HourlyWeatherApiController.class).listHourlyForecastByIPAddress(null)).withSelfRel()
+        );
+        hourlyWeatherListDTO.add(
+                linkTo(methodOn(RealtimeWeatherApiController.class).getRealtimeWeatherByIPAddress(null)).withRel("realtime")
+        );
+        hourlyWeatherListDTO.add(
+                linkTo(methodOn(DailyWeatherApiController.class).listDailyForecastByIPAddress(null)).withRel("daily_forecast")
+        );
+        hourlyWeatherListDTO.add(
+                linkTo(methodOn(FullWeatherApiController.class).getFullWeatherByIPAddress(null)).withRel("full_forecast")
+        );
+        return hourlyWeatherListDTO;
+    }
+
+    private HourlyWeatherListDTO addLinkByLocationCode(HourlyWeatherListDTO hourlyWeatherListDTO, String locationCode) {
+        hourlyWeatherListDTO.add(
+                linkTo(methodOn(HourlyWeatherApiController.class).listHourlyForecastByLocationCode(locationCode, null)).withSelfRel()
+        );
+        hourlyWeatherListDTO.add(
+                linkTo(methodOn(RealtimeWeatherApiController.class).getRealtimeWeatherByLocationCode(locationCode)).withRel("realtime")
+        );
+        hourlyWeatherListDTO.add(
+                linkTo(methodOn(DailyWeatherApiController.class).listDailyForecastByLocationCode(locationCode)).withRel("daily_forecast")
+        );
+        hourlyWeatherListDTO.add(
+                linkTo(methodOn(FullWeatherApiController.class).getFullWeatherByLocationCode(locationCode)).withRel("full_forecast")
+        );
+        return hourlyWeatherListDTO;
     }
 
 
