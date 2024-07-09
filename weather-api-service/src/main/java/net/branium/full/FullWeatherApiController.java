@@ -13,11 +13,15 @@ import net.branium.hourly.HourlyWeatherMapper;
 import net.branium.location.GeolocationService;
 import net.branium.realtime.RealtimeWeatherMapper;
 import net.branium.util.Utilities;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/v1/full")
@@ -28,21 +32,24 @@ public class FullWeatherApiController {
     private final RealtimeWeatherMapper realtimeWeatherMapper;
     private final HourlyWeatherMapper hourlyWeatherMapper;
     private final DailyWeatherMapper dailyWeatherMapper;
+    private final FullWeatherModelAssembler fullWeatherModelAssembler;
 
     @GetMapping
-    public ResponseEntity<FullWeatherDTO> getFullWeatherByIPAddress(HttpServletRequest request) {
+    public ResponseEntity<?> getFullWeatherByIPAddress(HttpServletRequest request) {
         String clientIPAddress = Utilities.getIPAddress(request);
         Location location = geolocationService.getLocation(clientIPAddress);
         Location fullWeatherByLocation = fullWeatherService.getFullWeatherByLocation(location);
         FullWeatherDTO fullWeatherDTO = toFullWeatherDTO(fullWeatherByLocation);
-        return ResponseEntity.ok(fullWeatherDTO);
+        return ResponseEntity.ok(fullWeatherModelAssembler.toModel(fullWeatherDTO));
     }
 
     @GetMapping(path = "/{locationCode}")
-    public ResponseEntity<FullWeatherDTO> getFullWeatherByLocationCode(@PathVariable("locationCode") String locationCode) {
+    public ResponseEntity<?> getFullWeatherByLocationCode(@PathVariable("locationCode") String locationCode) {
         Location fullWeatherByLocation = fullWeatherService.getFullWeatherByLocationCode(locationCode);
         FullWeatherDTO fullWeatherDTO = toFullWeatherDTO(fullWeatherByLocation);
-        return ResponseEntity.ok(fullWeatherDTO);
+        return ResponseEntity.ok(
+                addLinkByLocationCode(fullWeatherDTO, locationCode)
+        );
     }
 
     @PutMapping(path = "/{locationCode}")
@@ -58,8 +65,17 @@ public class FullWeatherApiController {
 
         Location locationInRequest = fullWeatherDTOToLocation(fullWeatherDTO);
         Location locationUpdated = fullWeatherService.updateFullWeatherByLocationCode(locationCode, locationInRequest);
-        return ResponseEntity.ok(toFullWeatherDTO(locationUpdated));
+        return ResponseEntity.ok(
+                addLinkByLocationCode(toFullWeatherDTO(locationUpdated), locationCode)
+        );
     }
+
+    private EntityModel<FullWeatherDTO> addLinkByLocationCode(FullWeatherDTO fullWeatherDTO, String locationCode) {
+        EntityModel<FullWeatherDTO> entityModel = EntityModel.of(fullWeatherDTO);
+        entityModel.add(linkTo(methodOn(FullWeatherApiController.class).getFullWeatherByLocationCode(locationCode)).withSelfRel());
+        return entityModel;
+    }
+
 
     private Location fullWeatherDTOToLocation(FullWeatherDTO fullWeatherDTO) {
         var realtimeWeatherDTO = fullWeatherDTO.getRealtimeWeather();
