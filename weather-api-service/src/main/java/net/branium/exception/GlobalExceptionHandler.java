@@ -1,6 +1,8 @@
 package net.branium.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -80,6 +83,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .errors(List.of(HttpStatus.BAD_REQUEST.getReasonPhrase()))
                 .build();
     }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorDTO handleConstraintViolationException(HttpServletRequest request, Exception ex) {
+        ConstraintViolationException exception = (ConstraintViolationException) ex;
+        Set<ConstraintViolation<?>> constraintViolations = ((ConstraintViolationException) ex).getConstraintViolations();
+        return ErrorDTO.
+                builder()
+                .path(request.getServletPath())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .timeStamp(LocalDateTime.now())
+                .errors(constraintViolations.stream().map(constraintViolation -> constraintViolation.getMessage()).toList())
+                .build();
+    }
+
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,

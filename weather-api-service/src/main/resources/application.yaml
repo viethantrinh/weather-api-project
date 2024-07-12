@@ -13,3 +13,8 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.OracleDialect
 
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    serialization:
+      indent-output: true
+

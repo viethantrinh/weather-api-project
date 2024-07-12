@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.Rollback;
 
@@ -37,9 +41,34 @@ class LocationRepositoryTests {
         assertThat(savedLocation.getCode()).isEqualTo("MBMH_IN");
     }
 
+    @Deprecated
     @Test
     void testGetAllUnTrashedLocationsSuccess() {
         List<Location> locations = locationRepo.findAllUnTrashed();
+    }
+
+    @Test
+    void testListFirstPage() {
+        int pageSize = 5;
+        int pageNum = 0;
+
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
+        Page<Location> page = locationRepo.findAllUnTrashed(pageable);
+        assertThat(page).size().isEqualTo(pageSize);
+        System.out.println(page);
+        page.forEach(System.out::println);
+    }
+
+    @Test
+    void testListSecondPageWithSort() {
+        int pageSize = 5;
+        int pageNum = 0;
+
+        Sort sort = Sort.by("code").descending();
+        Pageable pageable = PageRequest.of(pageNum, pageSize, sort);
+        Page<Location> page = locationRepo.findAllUnTrashed(pageable);
+        System.out.println(page);
+        page.forEach(System.out::println);
     }
 
     @Test

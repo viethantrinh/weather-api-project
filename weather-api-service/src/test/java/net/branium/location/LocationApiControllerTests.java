@@ -82,6 +82,7 @@ class LocationApiControllerTests {
     }
 
     @Test
+    @Deprecated
     void givenEmptyLocationList_whenGetLocationsCalled_thenShouldReturn204NoContent() throws Exception {
         List<Location> locations = Collections.emptyList();
         when(locationService.getLocations()).thenReturn(locations);
@@ -91,6 +92,7 @@ class LocationApiControllerTests {
     }
 
     @Test
+    @Deprecated
     void givenNotEmptyLocationList_whenGetLocationsCalled_thenShouldReturn200OK() throws Exception {
         Location location1 = Location.builder()
                 .code("NYC_USA")

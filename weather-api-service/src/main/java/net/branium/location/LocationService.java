@@ -3,6 +3,10 @@ package net.branium.location;
 import lombok.RequiredArgsConstructor;
 import net.branium.common.Location;
 import net.branium.exception.LocationNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +21,13 @@ public class LocationService {
         return locationRepo.save(location);
     }
 
+    public Page<Location> listByPage(int pageNum, int pageSize, String sortField) {
+        Sort sort = Sort.by(sortField).ascending();
+        Pageable pageable = PageRequest.of(pageNum, pageSize, sort);
+        return locationRepo.findAllUnTrashed(pageable);
+    }
+
+    @Deprecated
     public List<Location> getLocations() {
         return locationRepo.findAllUnTrashed();
     }

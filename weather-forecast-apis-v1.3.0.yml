@@ -1,0 +1,1650 @@
+openapi: 3.0.3
+info:
+  title: Weather Forecast APIs - SkyAPI Inc.
+  version: 1.3.0
+  description: >-
+    Reference design documentation of Weather Forecast APIs based on the OpenAPI
+    3.0 specification. Created by Nam Ha Minh - instructor of the "Spring Boot REST APIs Ultimate course". Visit course: https://www.udemy.com/course/spring-boot-rest-apis-ultimate.<br>
+    - Version 1.2.0 describes links in response of Location APIs as well as query parameters used in List Location API, for pagination, sort and filter.<br>
+    - Version 1.2.1 describes advanced sort option.<br>
+    - Version 1.3.0 describes security requirement.
+  termsOfService: https://skyweather.net/terms
+  contact:
+    email: contact@skyweather.net
+    name: Contact SkyAPI Inc.
+    url: https://skyweather.net/contacts
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+externalDocs:
+  description: ISO 3166 - Country Codes
+  url: https://www.iso.org/iso-3166-country-codes.html
+servers:
+  - url: localhost:8080
+    variables: {}
+    description: for testing on local computer
+tags:
+  - name: Location
+    description: >-
+      APIs for location management (cities and regions in the world). Used for
+      administrative purposes.
+  - name: Realtime Weather
+    description: APIs for accessing and updating realtime weather data
+  - name: Hourly Forecast
+    description: APIs for accessing and updating hourly weather forecast
+  - name: Daily Forecast
+    description: APIs for accessing and updating daily weather forecast
+  - name: Full Weather Forecast
+    description: >-
+      APIs for accessing and updating full weather information (including realtime, hourly
+      and daily forecast)
+paths:
+  /v1/locations:
+    summary: Operations for managing cities and regions around the world (location)
+    description: Clients use these APIs to manage locations available for weather forecast
+    get:
+      summary: Returns a list of managed locations - available for weather forecast
+      description: Clients use this API to get a list of managed locations. Each location is uniquely identified by location code, for example 'LACA_US' represents Los Angeles city in California state, in the United States of America (US)
+      operationId: listFirstPageOfLocations
+      security:
+        - OAuth: [READER, SYSTEM]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          required: false
+          description: the page number to retrieve locations if there are more than one page of data
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 5
+            minimum: 5
+          required: false
+          description: the number of items per page, or the maximum number of locations listed in response
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: "code"
+          required: false
+          description: specifies the sort option to get the result sorted by one or more fields. Prefix a field name with a dash (-) to specify the result is sorted by that field in descending order.<br>
+            <li>sort=city_name&#58; sorted by city name in ascending order</li>
+            <li>sort=-city_name&#58; sorted by city name in descending order</li>
+            <li>sort=region_name,city_name&#58; sorted by region name, then by city name (both in ascending order)</li>
+            <li>sort=region_name,-city_name&#58; sorted by region name in ascending order, then sorted by city name in descending order</li>
+            <li>sort=country_code,-region_name,-city_name&#58; sorted by country code in ascending order, then by region name in descending order, then by city name in descending order</li>
+
+        - in: query
+          name: country_code
+          schema:
+            type: string
+            example: "US"
+          required: false
+          description: if specified, only locations having this country code will be returned  
+        - in: query
+          name: region_name
+          schema:
+            type: string
+            example: "California"
+          required: false
+          description: if specified, only locations in this region will be returned
+        - in: query
+          name: enabled
+          schema:
+            type: boolean
+            example: true
+          required: false
+          description: if specified, only locations are enabled (true) or disabled (false) will be returned           
+      responses:
+        '200':
+          description: successful operation. There are managed locations available.<br>
+            The response contains locations listed in the specified page number, or in the first page if no page parameter specified.<br>
+            The pagination details are described in the object named 'page'.<br>
+            The '_links' object contains links which clients can use to retrieve data in the first, next, previous or last page.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+              examples:
+                listLocationsExample:
+                  $ref: '#/components/examples/listLocationsExample'
+          links:
+            self:
+              operationId: listFirstPageOfLocations
+              description: self link points URI of the current request
+            first:
+              operationId: listFirstPageOfLocations
+              description: link to retrieve the first page of data 
+            next:
+              operationId: listFirstPageOfLocations
+              description: link to retrieve the next page of data 
+            prev:
+              operationId: listFirstPageOfLocations
+              description: link to retrieve the previous page of data
+            last:
+              operationId: listFirstPageOfLocations
+              description: link to retrieve the last page of data                 
+        '204':
+          description: No managed locations available
+      tags:
+        - Location
+    post:
+      summary: Adds a new location to be managed for weather forecast
+      description: Clients use this API to put a new location into the system. Location code must be manually specified. Country code and country name based on ISO 3166
+      operationId: addLocation
+      security:
+        - OAuth: [SYSTEM]      
+      requestBody:
+        description: a JSON object that represents a location
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Location'
+      responses:
+        '201':
+          description: >-
+            Successful add operation. Location added. Returns details of the newly
+            added location. The response contains links which clients can use to get realtime, hourly,  daily and full weather forecast of the location.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+              examples:
+                singleLocationExample:
+                  $ref: '#/components/examples/singleLocationExample'    
+          links:
+           self:
+            $ref: '#/components/links/locationLinkByCode'            
+           realtime:
+            $ref: '#/components/links/realtimeLinkByCode'           
+           hourly_forecast:
+            $ref: '#/components/links/hourlyForecastLinkByCode'
+           daily_forecast:
+            $ref: '#/components/links/dailyForecastLinkByCode'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByCode'                    
+        '400':
+          description: >-
+            Failed add operation. Request body rejected due to some fields have
+            invalid values
+      tags:
+        - Location
+    put:
+      summary: Updates an existing location
+      description: Clients use this API to modify information of a specific location. Note that location code cannot be changed.
+      operationId: updateLocation
+      security:
+        - OAuth: [SYSTEM]      
+      requestBody:
+        description: >-
+          a JSON object that represents the location information that needs to
+          be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Location'
+      responses:
+        '200':
+          description: >-
+            Successful update operation. Location updated. Returns details of the
+            recently updated location. The response contains links which clients can use to get realtime, hourly,  daily and full weather forecast of the location.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+              examples:
+                singleLocationExample:
+                  $ref: '#/components/examples/singleLocationExample'
+          links:
+           self:
+            $ref: '#/components/links/locationLinkByCode'            
+           realtime:
+            $ref: '#/components/links/realtimeLinkByCode'           
+           hourly_forecast:
+            $ref: '#/components/links/hourlyForecastLinkByCode'
+           daily_forecast:
+            $ref: '#/components/links/dailyForecastLinkByCode'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByCode'                    
+        '400':
+          description: >-
+            Failed update operation. Request body rejected due to some fields have
+            invalid values
+        '404':
+          description: No location found with the given code.
+      tags:
+        - Location
+  /v1/locations/{code}:
+    summary: Operations for managing a specific location identified by location code
+    parameters:
+      - $ref: '#/components/parameters/locationCode'
+    get:
+      summary: Returns details of a location
+      description: Clients use this API to find an existing location in the database by a specific code
+      operationId: getLocation
+      security:
+        - OAuth: [READER, SYSTEM]      
+      responses:
+        '200':
+          description: Successful retrieval operation. Location found. The response contains links which clients can use to get realtime, hourly,  daily and full weather forecast of the location.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+              examples:
+                singleLocationExample:
+                  $ref: '#/components/examples/singleLocationExample'
+          links:
+           self:
+            $ref: '#/components/links/locationLinkByCode'            
+           realtime:
+            $ref: '#/components/links/realtimeLinkByCode'           
+           hourly_forecast:
+            $ref: '#/components/links/hourlyForecastLinkByCode'
+           daily_forecast:
+            $ref: '#/components/links/dailyForecastLinkByCode'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByCode'                      
+        '404':
+          description: No location found with the given code.
+      tags:
+        - Location
+    delete:
+      summary: Removes an existing location found by a specific code
+      description: Clients use this API to delete a specific location from database
+      operationId: deleteLocation
+      security:
+        - OAuth: [SYSTEM]      
+      responses:
+        '204':
+          description: Successful delete operation. Location removed.
+        '404':
+          description: No location found with the given code.
+      tags:
+        - Location
+  /v1/realtime:
+    summary: Operation for accessing realtime weather data based on client's IP address
+    get:
+      summary: >-
+        Returns the current weather information of the location based on client's
+        IP address
+      description: >-
+        Clients use this API to get real time weather data of client's location (based on IP
+        address)
+      operationId: getRealtimeByIPAddress
+      security:
+        - OAuth: [READER, UPDATER, SYSTEM]      
+      responses:
+        '200':
+          description: >-
+            successful retrieval operation. Realtime data available for the client's
+            location. The response contains links which clients can use to get hourly, daily and full weather forecast of the same location.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealtimeWeather'
+              examples:
+                realtimeWeatherExample:
+                  $ref: '#/components/examples/realtimeWeatherExampleByIP'
+          links:
+           self:
+            $ref: '#/components/links/realtimeLinkByIP'           
+           hourly_forecast:
+            $ref: '#/components/links/hourlyForecastLinkByIP'
+           daily_forecast:
+            $ref: '#/components/links/dailyForecastLinkByIP'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByIP'                   
+        '400':
+          description: bad request. Could not determine client's IP address
+        '404':
+          description: No managed location found for the client's IP address
+      tags:
+        - Realtime Weather
+  /v1/realtime/{code}:
+    summary: Operations for accessing and updating realtime weather data based on location code
+    parameters:
+      - $ref: '#/components/parameters/locationCode'
+    get:
+      summary: >-
+        Returns the current weather information of a specific location
+        identified by the given code
+      description: Clients use this API to get realtime weather data of a specific location by the given code
+      operationId: getRealtimeByLocationCode
+      security:
+        - OAuth: [READER, UPDATER, SYSTEM]      
+      responses:
+        '200':
+          description: successful retrieval operation. Realtime data available for the given location. The response contains links which clients can use to get hourly, daily and full weather forecast of the same location.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealtimeWeather'
+              examples:
+                realtimeWeatherExample:
+                  $ref: '#/components/examples/realtimeWeatherExampleByCode'
+          links:
+           self:
+            $ref: '#/components/links/realtimeLinkByCode'           
+           hourly_forecast:
+            $ref: '#/components/links/hourlyForecastLinkByCode'
+           daily_forecast:
+            $ref: '#/components/links/dailyForecastLinkByCode'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByCode'                   
+        '404':
+          description: No managed location found for the given code
+      tags:
+        - Realtime Weather
+    put:
+      summary: Updates realtime weather data based on location code
+      description: >-
+        Clients use this API to update current weather information for a
+        specific location
+      operationId: updateRealtimeWeather
+      security:
+        - OAuth: [UPDATER, SYSTEM]      
+      requestBody:
+        description: >-
+          a JSON object that represents the realtime weather data that needs to
+          be updated. Request body must not include location and last updated time.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RealtimeWeather'
+            example:
+              temperature: 12
+              humidity: 55
+              precipitation: 23
+              status: Cloudy
+              wind_speed: 8
+      responses:
+        '200':
+          description: successful update operation. Realtime weather data updated successfully. The response contains links which clients can use to get hourly, daily and full weather forecast of the same location.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealtimeWeather'
+              examples:
+                realtimeWeatherExample:
+                  $ref: '#/components/examples/realtimeWeatherExampleByCode'    
+          links:
+           self:
+            $ref: '#/components/links/realtimeLinkByCode'           
+           hourly_forecast:
+            $ref: '#/components/links/hourlyForecastLinkByCode'
+           daily_forecast:
+            $ref: '#/components/links/dailyForecastLinkByCode'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByCode'                   
+        '404':
+          description: no managed location found for the given code
+      tags:
+        - Realtime Weather
+  /v1/hourly:
+    summary: Operation for accessing hourly weather forecast based on client's IP address
+    description: Clients use this API to get hourly forecast information for today
+    parameters:
+      - $ref: '#/components/parameters/currentHour'    
+    get:
+      summary: >-
+        Returns weather forecast for upcoming hours in the current day, based on
+        client's IP address
+      description: >-
+        Clients use this API to get weather forecast for upcoming hours in the
+        current day. Location is determined automatically based on client's IP
+        address.
+      operationId: listHourlyForecastByIPAddress
+      security:
+        - OAuth: [READER, UPDATER, SYSTEM]      
+      responses:
+        '200':
+          description: >-
+            successful retrieval operation. A JSON object representing hourly forecast
+            information available for the client's location - only data for the next hours is returned (based on value of the header X-Current-Hour).
+            The response contains links which clients can use to get realtime, daily and full weather information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HourlyWeather'
+              examples:
+                hourlyWeatherExample:
+                  $ref: '#/components/examples/hourlyWeatherExampleByIP'
+          links:
+           self:
+            $ref: '#/components/links/hourlyForecastLinkByIP'          
+           realtime:
+            $ref: '#/components/links/realtimeLinkByIP'
+           daily_forecast:
+            $ref: '#/components/links/dailyForecastLinkByIP'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByIP'              
+        '204':
+          description: No hourly forecast data available
+        '400':
+          description: Error during geolocation process or invalid value of request header X-Current-Hour
+        '404':
+          description: No managed location found for the client's IP address
+      tags:
+        - Hourly Forecast
+  /v1/hourly/{code}:
+    summary: Operations for accessing and updating hourly weather forecast data based on location code
+    description: >-
+      Client use this API to get and update hourly weather forecast data based
+      on location code
+    parameters:
+      - $ref: '#/components/parameters/locationCode'
+    get:
+      summary: Returns hourly weather forecast information based on location code. 
+      description: >-
+        Clients use this API to get weather forecast for upcomping hours
+        in the current day, for the given location code. Only data for the next hours is returned (based on value of the header X-Current-Hour).
+      operationId: listHourlyForecastByLocationCode
+      security:
+        - OAuth: [READER, UPDATER, SYSTEM]       
+      parameters:
+        - $ref: '#/components/parameters/currentHour'         
+      responses:
+        '200':
+          description: >-
+            successful retrieval operation. A JSON object representing hourly forecast
+            data available for the given location code. The response contains links which clients can use to get realtime, daily and full weather information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HourlyWeather'
+              examples:
+                hourlyWeatherExample:
+                  $ref: '#/components/examples/hourlyWeatherExampleByCode'
+          links:
+           self:
+            $ref: '#/components/links/hourlyForecastLinkByCode'           
+           realtime:
+            $ref: '#/components/links/realtimeLinkByCode'
+           daily_forecast:
+            $ref: '#/components/links/dailyForecastLinkByCode'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByCode'            
+        '204':
+          description: No hourly forecast data available
+        '400':
+          description: Invalid value of request header X-Current-Hour
+        '404':
+          description: No managed location found for the given location code
+      tags:
+        - Hourly Forecast
+    put:
+      summary: Updates hourly weather forecast information for a specific location
+      description: >-
+        Clients use this API to update weather forecast for upcoming hours
+        in the current day, for the given location code. Successful update operation will replace all existing data.
+      operationId: updateHourlyForecast
+      security:
+        - OAuth: [UPDATER, SYSTEM]       
+      requestBody:
+        description: >-
+          a JSON object that represents the hourly weather forecast data that
+          needs to be updated. It must be an array of hourly forecast information as shown in the below example.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HourlyWeather'
+            example:
+              [
+                {
+                  "hour_of_day": 8,            
+                  "temperature": 12,
+                  "precipitation": 88,
+                  "status": "Cloudy"
+                },
+                {
+                  "hour_of_day": 9,
+                  "temperature": 13,
+                  "precipitation": 86,
+                  "status": "Cloudy"
+                },
+                {
+                  "hour_of_day": 10,
+                  "temperature": 15,
+                  "precipitation": 60,
+                  "status": "Sunny"
+                }                
+              ]            
+      responses:
+        '200':
+          description: successful update operation. Hourly weather forecast data updated successfully - all previous data is replaced. The response contains links which clients can use to get realtime, daily and full weather information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HourlyWeather'
+              examples:
+                hourlyWeatherExample:
+                  $ref: '#/components/examples/hourlyWeatherExampleByCode'   
+          links:
+           self:
+            $ref: '#/components/links/hourlyForecastLinkByCode'           
+           realtime:
+            $ref: '#/components/links/realtimeLinkByCode'
+           daily_forecast:
+            $ref: '#/components/links/dailyForecastLinkByCode'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByCode'                   
+        '400':
+          description: bad request. Request body contains empty array (no data) or there are some invalid values of fields in hourly forecast information.
+        '404':
+          description: no managed location found for the given code
+      tags:
+        - Hourly Forecast
+  /v1/daily:
+    summary: >-
+      Operation for accessing daily weather forecast information based on
+      client's IP address
+    description: Clients use this API to get forecast information about weather in the upcoming days
+    get:
+      summary: >-
+        Returns daily weather forecast information for the location based on
+        client's IP address
+      description: Clients use this API to get forecast about weather in the upcoming days. Location is determined automatically based on client's IP address.
+      operationId: listDailyForecastByIPAddress
+      security:
+        - OAuth: [READER, UPDATER, SYSTEM]       
+      responses:
+        '200':
+          description: >-
+            successful retrieval operation. A JSON object representing daily forecast
+            data available for the client's location. The response contains links which clients can use to get realtime, hourly and full weather forecast information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyWeather'
+              examples:
+                dailyWeatherExample:
+                  $ref: '#/components/examples/dailyWeatherExampleByIP'
+          links:
+           self:
+            $ref: '#/components/links/dailyForecastLinkByIP'           
+           realtime:
+            $ref: '#/components/links/realtimeLinkByIP'
+           hourly_forecast:
+            $ref: '#/components/links/hourlyForecastLinkByIP'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByIP'                  
+        '204':
+          description: No daily forecast data available
+        '400':
+          description: bad request. Could not determine client's IP address
+        '404':
+          description: No managed location found for the client's IP address
+      tags:
+        - Daily Forecast
+  /v1/daily/{code}:
+    summary: >-
+      Operations for accessing and updating daily weather forecast data for a
+      specific location
+    description: >-
+      Clients use these APIs to get and modify daily weather forecast information based on
+      location code
+    parameters:
+      - $ref: '#/components/parameters/locationCode'
+    get:
+      summary: Returns daily weather forecast information for a specific location code
+      description: >-
+        Clients use this API to get forecast about weather in the upcoming
+        days, for the given location code
+      operationId: getDailyForecastByLocationCode
+      security:
+        - OAuth: [READER, UPDATER, SYSTEM]       
+      responses:
+        '200':
+          description: >-
+            successful retrieval operation. A JSON object representing daily forecast
+            data available for the given location code. The response contains links which clients can use to get realtime, hourly and full weather forecast information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyWeather'
+              examples:
+                dailyWeatherExample:
+                  $ref: '#/components/examples/dailyWeatherExampleByCode'
+          links:
+           self:
+            $ref: '#/components/links/dailyForecastLinkByCode'           
+           realtime:
+            $ref: '#/components/links/realtimeLinkByCode'
+           hourly_forecast:
+            $ref: '#/components/links/hourlyForecastLinkByCode'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByCode'                   
+        '204':
+          description: No daily forecast data available
+        '404':
+          description: No managed location found for the given location code
+      tags:
+        - Daily Forecast
+    put:
+      summary: >-
+        Update daily weather forecast information for a location specified by
+        the given location code. 
+      description: >-
+        Clients use this API to update data about weather forecast
+        information in the upcoming days, based on given location code. Successful update operation will replace all existing data.
+      operationId: updateDailyForecast
+      security:
+        - OAuth: [UPDATER, SYSTEM]       
+      requestBody:
+        description: >-
+          a JSON object that represents the daily weather forecast data that
+          needs to be updated. It must be an array of daily forecast information as shown in the below example.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DailyWeather'
+            example:
+              [
+                {
+                  "day_of_month": 10,
+                  "month": 2,
+                  "min_temp": 6,
+                  "max_temp": 12,
+                  "precipitation": 60,
+                  "status": "Cloudy"
+                },     
+                {
+                  "day_of_month": 11,
+                  "month": 2,
+                  "min_temp": 7,
+                  "max_temp": 14,
+                  "precipitation": 70,
+                  "status": "Sunny"
+                },   
+                {
+                  "day_of_month": 12,
+                  "month": 2,
+                  "min_temp": 6,
+                  "max_temp": 10,
+                  "precipitation": 90,
+                  "status": "Rainy"
+                }             
+              ]                
+      responses:
+        '200':
+          description: successful update operation. Daily weather forecast data updated successfully - all previous data is replaced. The response contains links which clients can use to get realtime, hourly and full weather forecast information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyWeather'
+              examples:
+                dailyWeatherExample:
+                  $ref: '#/components/examples/dailyWeatherExampleByCode'      
+          links:
+           self:
+            $ref: '#/components/links/dailyForecastLinkByCode'           
+           realtime:
+            $ref: '#/components/links/realtimeLinkByCode'
+           hourly_forecast:
+            $ref: '#/components/links/hourlyForecastLinkByCode'
+           full_forecast:
+            $ref: '#/components/links/fullForecastLinkByCode'                     
+        '400':
+          description: >-
+            Bad request. Request body contains empty array (no data) or there are some invalid values of fields in daily forecast information.
+        '404':
+          description: no managed location found for the given code
+      tags:
+        - Daily Forecast
+  /v1/full:
+    summary: Operation for accessing full weather information based on client's IP address
+    description: >-
+      Clients use this API get weather information of a location, including realtime
+      data, hourly and daily forecast, with location identified based on
+      client's IP address
+    get:
+      summary: Returns full weather forecast information based on client's IP address
+      description: >-
+        Clients use this API to get full weather information about weather of a location determined based on
+        client's IP address
+      operationId: getFullWeatherByIPAddress
+      security:
+        - OAuth: [READER, UPDATER, SYSTEM]       
+      responses:
+        '200':
+          description: >-
+            successful retrieval operation. A JSON object represents full weather forecast
+            information, which is aggregation of realtime weather, hourly forecast and daily forecast
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullWeather'
+              examples:
+                fullWeatherExample1:
+                  $ref: '#/components/examples/fullWeatherExample1'
+                fullWeatherExample2:
+                  $ref: '#/components/examples/fullWeatherExample2'   
+                fullWeatherExample3:
+                  $ref: '#/components/examples/fullWeatherExample3' 
+                fullWeatherExample4:
+                  $ref: '#/components/examples/fullWeatherExample4'   
+          links:
+           self:
+            $ref: '#/components/links/fullForecastLinkByIP'                   
+        '400':
+          description: bad request. Could not determine client's IP address
+        '404':
+          description: No managed location found for the client's IP address
+      tags:
+        - Full Weather Forecast
+  /v1/full/{code}:
+    summary: Operations for accessing and updating full weather information based on a specific location code
+    description: Clients use these APIs to retrieve and modify full weather forecast data, for a specific location identified by the given code
+    parameters:
+      - $ref: '#/components/parameters/locationCode'
+    get:
+      summary: >-
+        Returns full weather forecast information for the location specified by
+        the given code
+      description: >-
+        Clients use this API to get weather information including realtime, hourly
+        and daily forecast
+      operationId: getFullWeatherByLocationCode
+      security:
+        - OAuth: [READER, UPDATER, SYSTEM]       
+      responses:
+        '200':
+          description: >-
+            successful retrieval operation. A JSON object represents full weather forecast
+            information, which is aggregation of realtime weather, hourly forecast and daily forecast.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullWeather'
+              examples:
+                fullWeatherExample1:
+                  $ref: '#/components/examples/fullWeatherExample1'
+                fullWeatherExample2:
+                  $ref: '#/components/examples/fullWeatherExample2'   
+                fullWeatherExample3:
+                  $ref: '#/components/examples/fullWeatherExample3' 
+                fullWeatherExample4:
+                  $ref: '#/components/examples/fullWeatherExample4'
+          links:
+           self:
+            $ref: '#/components/links/fullForecastLinkByCode'                       
+        '404':
+          description: No managed location found for the given location code
+      tags:
+        - Full Weather Forecast
+    put:
+      summary: >-
+        Updates full weather forecast information of the location specified by
+        the given code
+      description: >-
+        Clients use this API to update realtime, hourly and daily forecast
+        of a location at once (full weather information)
+      operationId: updateFullWeather
+      security:
+        - OAuth: [UPDATER, SYSTEM]       
+      requestBody:
+        description: >-
+          a JSON object that represents the full weather forecast information that
+          needs to be updated. Realtime weather, hourly forecast and daily forecast must be present. Location information is not required.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FullWeather'
+            examples:
+              updateFullWeatherExample:
+                $ref: '#/components/examples/updateFullWeatherExample'              
+      responses:
+        '200':
+          description: successful update operation. Full weather forecast data updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullWeather'
+              examples:
+                fullWeatherExample1:
+                  $ref: '#/components/examples/fullWeatherExample1'   
+          links:
+           self:
+            $ref: '#/components/links/fullForecastLinkByCode'                       
+        '400':
+          description: >-
+            Bad request. Request body contains some invalid values of fields in realtime weather, hourly forecast or daily forecast                 
+        '404':
+          description: no managed location found for the given code
+      tags:
+        - Full Weather Forecast
+components:
+  schemas:
+    Location:
+      type: object
+      properties:
+        code:
+          type: string
+          description: unique code of a location
+          example: LACA_US
+        city_name:
+          type: string
+          description: name of the city
+          example: Los Angeles
+        region_name:
+          type: string
+          description: name of the region, state or province
+          example: California
+        country_code:
+          type: string
+          description: 2 characters representing country code based on ISO 3166 standard
+          example: US
+        country_name:
+          type: string
+          description: name of the country based on ISO 3166 standard
+          example: United States of America
+        enabled:
+          type: boolean
+          description: whether the location enabled (true) or disabled (false)
+          example: true
+    RealtimeWeather:
+      type: object
+      properties:
+        location:
+          type: string
+          description: name of location, in form of "city name, state/region name, country name"
+          example: New York City, New York, United States of America
+        temperature:
+          type: number
+          format: int32
+          description: current temperature of the location, default in Celsius degree
+          example: 12
+        humidity:
+          type: number
+          format: int32
+          description: percentage of humidity
+          example: 72
+        precipitation:
+          type: number
+          format: int32
+          description: percentage chance of rain
+          example: 50
+        status:
+          type: string
+          description: current weather status
+          example: Sunny
+        wind_speed:
+          type: number
+          format: int32
+          description: current wind speed (default unit is km/h)
+          example: 8
+        last_updated:
+          type: string
+          format: date-time
+          pattern: yyyy-MM-dd'T'HH:mm:ss'Z'
+          description: the last time weather data is updated. Datetime format follows RFC 3339 and ISO 8601.
+          example: 2023-02-28T10:50:45Z
+    HourlyWeather:
+      type: object
+      properties:
+        location:
+          type: string
+          description: name of location, in form of "city name, state/region name, country name"
+          example: New York, New York, US
+        hourly_forecast:
+          type: array
+          items:
+            type: object
+            properties:
+              hour_of_day:
+                type: number
+                description: the forecasted hour (in 24h format)
+                example: 14
+              temperature:
+                type: number
+                format: int32
+                description: forecasted temperature at the hour, default in Celcius degree
+                example: 19
+              precipitation:
+                type: number
+                format: int32
+                description: percentage chance of rain
+                example: 67
+              status:
+                type: string
+                description: current weather status
+                example: Cloudy
+    DailyWeather:
+      type: object
+      properties:
+        location:
+          type: string
+          description: name of location, in form of "city name, state/region name, country name"
+          example: New York, New York, US
+        daily_forecast:
+          type: array
+          items:
+            type: object
+            properties:
+              day_of_month:
+                type: number
+                description: the forecasted day
+                example: 8
+              month:
+                type: number
+                description: the forecasted month (1-12)
+                example: 8
+              min_temp:
+                type: number
+                format: int32
+                description: the forecasted minimum temperature (default in Celsius degree)
+                example: 12
+              max_temp:
+                type: number
+                format: int32
+                description: the forecasted maximum temperature (default in Celsius degree)
+                example: 12
+              precipitation:
+                type: number
+                format: int32
+                description: percentage chance of rain
+                example: 67
+              status:
+                type: string
+                description: current weather status
+                example: Cloudy
+    FullWeather:
+      type: object
+      properties:
+        location:
+          type: string
+          description: name of location, in form of "city name, state/region name, country name"
+          example: New York, New York, US
+        realtime:
+          type: object
+          properties:
+            temperature:
+              type: number
+              format: int32
+              description: current temperature of the location, default in Celcius degree
+              example: 12
+            humidity:
+              type: number
+              format: int32
+              description: percentage of humidity
+              example: 72
+            precipitation:
+              type: number
+              format: int32
+              description: percentage chance of rain
+              example: 50
+            status:
+              type: string
+              description: current weather status
+              example: Sunny
+            wind_speed:
+              type: number
+              format: int32
+              description: current wind speed (default unit is km/h)
+              example: 8
+            last_updated:
+              type: string
+              format: date-time
+              description: the last time weather data is updated
+        hourly_forecast:
+          type: array
+          items:
+            type: object
+            properties:
+              hour_of_day:
+                type: number
+                description: the forecasted hour (in 24h format)
+                example: 14
+              temperature:
+                type: number
+                format: int32
+                description: forecasted temperature at the hour, default in Celcius degree
+                example: 19
+              precipitation:
+                type: number
+                format: int32
+                description: percentage chance of rain
+                example: 67
+              status:
+                type: string
+                description: current weather status
+                example: Cloudy
+        daily_forecast:
+          type: array
+          items:
+            type: object
+            properties:
+              day_of_month:
+                type: number
+                description: the forecasted day
+                example: 8
+              month:
+                type: number
+                description: the forecasted month (1-12)
+                example: 8
+              min_temp:
+                type: number
+                format: int32
+                description: the forecasted minimum temperature (default in Celsius degree)
+                example: 12
+              max_temp:
+                type: number
+                format: int32
+                description: the forecasted maximum temperature (default in Celsius degree)
+                example: 12
+              precipitation:
+                type: number
+                format: int32
+                description: percentage chance of rain
+                example: 67
+              status:
+                type: string
+                description: current weather status
+                example: Cloudy
+  examples:
+    singleLocationExample:
+      summary: a location object
+      value: 
+        code: LACA_US
+        city_name: Los Angeles
+        region_name: California
+        country_code: US
+        country_name: United States of America
+        enabled: true
+        _links:
+          self:
+            href: http://localhost:8080/v1/locations/LACA_US
+          realtime:
+            href: http://localhost:8080/v1/realtime/LACA_US
+          hourly_forecast:
+            href: http://localhost:8080/v1/hourly/LACA_US
+          daily_forecast:
+            href: http://localhost:8080/v1/daily/LACA_US
+          full_forecast:
+            href: http://localhost:8080/v1/full/LACA_US
+      
+    listLocationsExample:
+      summary: the first page of locations
+      value:
+        _embedded:
+          locations:
+            - code: LACA_US
+              city_name: Los Angeles
+              region_name: California
+              country_code: US
+              country_name: United States of America
+              enabled: true
+              _links:
+                self:
+                  href: http://localhost:8080/v1/locations/LACA_US
+            - code: BJG_CN
+              city_name: Beijing
+              country_code: CN
+              country_name: China
+              enabled: false
+              _links:
+                self:
+                  href: http://localhost:8080/v1/locations/BJG_CN
+            - code: BLHWH_USA
+              city_name: Bellingham
+              region_name: Washington
+              country_code: US
+              country_name: United States of America
+              enabled: true
+              _links:
+                self:
+                  href: http://localhost:8080/v1/locations/BLHWH_USA
+            - code: BLVWH_USA
+              city_name: Bellevue
+              region_name: Washington
+              country_code: US
+              country_name: United States of America
+              enabled: true
+              _links:
+                self:
+                  href: http://localhost:8080/v1/locations/BLVWH_USA
+            - code: BNGK_TL
+              city_name: Bangkok
+              region_name: Central of Thailand
+              country_code: TL
+              country_name: Thailand
+              enabled: true
+              _links:
+                self:
+                  href: http://localhost:8080/v1/locations/BNGK_TL
+        _links:
+          self:
+            href: http://localhost:8080/v1/locations{?page,size,sort,enabled,region_name,country_code}
+            templated: true
+          first:
+            href: http://localhost:8080/v1/locations?page=1&size=5&sort=code{&enabled,region_name,country_code}
+            templated: true
+          next:
+            href: http://localhost:8080/v1/locations?page=2&size=5&sort=code{&enabled,region_name,country_code}
+            templated: true
+          last:
+            href: http://localhost:8080/v1/locations?page=8&size=5&sort=code{&enabled,region_name,country_code}
+            templated: true
+        page:
+          size: 5
+          total_elements: 36
+          total_pages: 8
+          number: 1
+      
+    realtimeWeatherExampleByIP:
+      summary: realtime weather information
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America",
+          "temperature": 12,
+          "humidity": 32,
+          "precipitation": 88,
+          "status": "Cloudy",
+          "wind_speed": 5,
+          "last_updated": "2023-02-02T19:23:00Z",
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/realtime"
+            },
+            "hourly_forecast": {
+              "href": "http://localhost:8080/v1/hourly"
+            },
+            "daily_forecast": {
+              "href": "http://localhost:8080/v1/daily"
+            },
+            "full_forecast": {
+              "href": "http://localhost:8080/v1/full"
+            }            
+          }          
+        }      
+    realtimeWeatherExampleByCode:
+      summary: realtime weather information
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America",
+          "temperature": 12,
+          "humidity": 32,
+          "precipitation": 88,
+          "status": "Cloudy",
+          "wind_speed": 5,
+          "last_updated": "2023-02-02T19:23:00Z",
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/realtime/SFCA_USA"
+            },
+            "hourly_forecast": {
+              "href": "http://localhost:8080/v1/hourly/SFCA_USA"
+            },
+            "daily_forecast": {
+              "href": "http://localhost:8080/v1/daily/SFCA_USA"
+            },
+            "full_forecast": {
+              "href": "http://localhost:8080/v1/full/SFCA_USA"
+            }            
+          }          
+        }          
+    hourlyWeatherExampleByIP:
+      summary: hourly weather forecast information
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America",
+          "hourly_forecast":
+          [
+            {
+              "hour_of_day": 8,            
+              "temperature": 12,
+              "precipitation": 88,
+              "status": "Cloudy"
+            },
+            {
+              "hour_of_day": 9,
+              "temperature": 13,
+              "precipitation": 86,
+              "status": "Cloudy"
+            },
+            {
+              "hour_of_day": 10,
+              "temperature": 15,
+              "precipitation": 60,
+              "status": "Sunny"
+            }
+          ],
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/hourly"
+            },
+            "realtime": {
+              "href": "http://localhost:8080/v1/realtime"
+            },
+            "daily_forecast": {
+              "href": "http://localhost:8080/v1/daily"
+            },
+            "full_forecast": {
+              "href": "http://localhost:8080/v1/full"
+            }            
+          }
+         
+        }
+    hourlyWeatherExampleByCode:
+      summary: hourly weather forecast information
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America",
+          "hourly_forecast":
+          [
+            {
+              "hour_of_day": 8,            
+              "temperature": 12,
+              "precipitation": 88,
+              "status": "Cloudy"
+            },
+            {
+              "hour_of_day": 9,
+              "temperature": 13,
+              "precipitation": 86,
+              "status": "Cloudy"
+            },
+            {
+              "hour_of_day": 10,
+              "temperature": 15,
+              "precipitation": 60,
+              "status": "Sunny"
+            }
+          ],
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/hourly/SFCA_USA"
+            },
+            "realtime": {
+              "href": "http://localhost:8080/v1/realtime/SFCA_USA"
+            },
+            "daily_forecast": {
+              "href": "http://localhost:8080/v1/daily/SFCA_USA"
+            },
+            "full_forecast": {
+              "href": "http://localhost:8080/v1/full/SFCA_USA"
+            }            
+          }
+         
+        }        
+    dailyWeatherExampleByIP:
+      summary: daily weather forecast information
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America",
+          "daily_forecast":
+          [
+            {
+              "day_of_month": 10,
+              "month": 2,
+              "min_temp": 6,
+              "max_temp": 12,
+              "precipitation": 60,
+              "status": "Cloudy"
+            },     
+            {
+              "day_of_month": 11,
+              "month": 2,
+              "min_temp": 7,
+              "max_temp": 14,
+              "precipitation": 70,
+              "status": "Sunny"
+            },   
+            {
+              "day_of_month": 12,
+              "month": 2,
+              "min_temp": 6,
+              "max_temp": 10,
+              "precipitation": 90,
+              "status": "Rainy"
+            }          
+          ],
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/daily"
+            },
+            "realtime": {
+              "href": "http://localhost:8080/v1/realtime"
+            },
+            "hourly_forecast": {
+              "href": "http://localhost:8080/v1/hourly"
+            },
+            "full_forecast": {
+              "href": "http://localhost:8080/v1/full"
+            }            
+          }          
+         
+        }  
+    dailyWeatherExampleByCode:
+      summary: daily weather forecast information
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America",
+          "daily_forecast":
+          [
+            {
+              "day_of_month": 10,
+              "month": 2,
+              "min_temp": 6,
+              "max_temp": 12,
+              "precipitation": 60,
+              "status": "Cloudy"
+            },     
+            {
+              "day_of_month": 11,
+              "month": 2,
+              "min_temp": 7,
+              "max_temp": 14,
+              "precipitation": 70,
+              "status": "Sunny"
+            },   
+            {
+              "day_of_month": 12,
+              "month": 2,
+              "min_temp": 6,
+              "max_temp": 10,
+              "precipitation": 90,
+              "status": "Rainy"
+            }          
+          ],
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/daily/SFCA_USA"
+            },
+            "realtime": {
+              "href": "http://localhost:8080/v1/realtime/SFCA_USA"
+            },
+            "hourly_forecast": {
+              "href": "http://localhost:8080/v1/hourly/SFCA_USA"
+            },
+            "full_forecast": {
+              "href": "http://localhost:8080/v1/full/SFCA_USA"
+            }            
+          }          
+         
+        }          
+    fullWeatherExample1:
+      summary: full weather forecast information
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America",
+          "realtime_weather": {
+            "temperature": 12,
+            "humidity": 32,
+            "precipitation": 88,
+            "status": "Cloudy",
+            "wind_speed": 5,
+            "last_updated": "2023-02-02 19:23:00"
+          },      
+          "hourly_forecast":
+          [
+            {
+              "hour_of_day": 8,            
+              "temperature": 12,
+              "precipitation": 88,
+              "status": "Cloudy"
+            },
+            {
+              "hour_of_day": 9,
+              "temperature": 13,
+              "precipitation": 86,
+              "status": "Cloudy"
+            },
+            {
+              "hour_of_day": 10,
+              "temperature": 15,
+              "precipitation": 60,
+              "status": "Sunny"
+            }                
+          ],          
+          "daily_forecast":
+          [
+            {
+              "day_of_month": 10,
+              "month": 2,
+              "min_temp": 6,
+              "max_temp": 12,
+              "precipitation": 60,
+              "status": "Cloudy"
+            },     
+            {
+              "day_of_month": 11,
+              "month": 2,
+              "min_temp": 7,
+              "max_temp": 14,
+              "precipitation": 70,
+              "status": "Sunny"
+            },   
+            {
+              "day_of_month": 12,
+              "month": 2,
+              "min_temp": 6,
+              "max_temp": 10,
+              "precipitation": 90,
+              "status": "Rainy"
+            }          
+          ],
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/full/SFCA_USA"
+            }         
+          }          
+         
+        }     
+    fullWeatherExample2:
+      summary: realtime weather not present
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America",    
+          "hourly_forecast":
+          [
+            {
+              "hour_of_day": 8,            
+              "temperature": 12,
+              "precipitation": 88,
+              "status": "Cloudy"
+            },
+            {
+              "hour_of_day": 9,
+              "temperature": 13,
+              "precipitation": 86,
+              "status": "Cloudy"
+            }            
+          ],          
+          "daily_forecast":
+          [
+            {
+              "day_of_month": 10,
+              "month": 2,
+              "min_temp": 6,
+              "max_temp": 12,
+              "precipitation": 60,
+              "status": "Cloudy"
+            },     
+            {
+              "day_of_month": 11,
+              "month": 2,
+              "min_temp": 7,
+              "max_temp": 14,
+              "precipitation": 70,
+              "status": "Sunny"
+            }        
+          ],
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/full/SFCA_USA"
+            }         
+          }            
+         
+        }      
+    fullWeatherExample3:
+      summary: hourly forecast and daily forecast not available
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America",   
+          "realtime_weather": {
+            "temperature": 12,
+            "humidity": 32,
+            "precipitation": 88,
+            "status": "Cloudy",
+            "wind_speed": 5,
+            "last_updated": "2023-02-02 19:23:00"
+          },            
+          "hourly_forecast":[ ],        
+          "daily_forecast": [ ],
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/full/SFCA_USA"
+            }         
+          }            
+        } 
+    fullWeatherExample4:
+      summary: no realtime weather, no hourly forecast, no daily forecast
+      value: |-
+        {
+          "location": "San Francisco, California, United States of America", 
+          "hourly_forecast":[ ],        
+          "daily_forecast": [ ],
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/full/SFCA_USA"
+            }         
+          }            
+        }         
+    updateFullWeatherExample:
+      summary: full weather forecast information to be updated
+      value: |-
+        {
+          "realtime_weather": {
+            "temperature": 12,
+            "humidity": 32,
+            "precipitation": 88,
+            "status": "Cloudy",
+            "wind_speed": 5,
+            "last_updated": "2023-02-02 19:23:00"
+          },      
+          "hourly_forecast":
+          [
+            {
+              "hour_of_day": 8,            
+              "temperature": 12,
+              "precipitation": 88,
+              "status": "Cloudy"
+            },
+            {
+              "hour_of_day": 9,
+              "temperature": 13,
+              "precipitation": 86,
+              "status": "Cloudy"
+            },
+            {
+              "hour_of_day": 10,
+              "temperature": 15,
+              "precipitation": 60,
+              "status": "Sunny"
+            }                
+          ],          
+          "daily_forecast":
+          [
+            {
+              "day_of_month": 10,
+              "month": 2,
+              "min_temp": 6,
+              "max_temp": 12,
+              "precipitation": 60,
+              "status": "Cloudy"
+            },     
+            {
+              "day_of_month": 11,
+              "month": 2,
+              "min_temp": 7,
+              "max_temp": 14,
+              "precipitation": 70,
+              "status": "Sunny"
+            },   
+            {
+              "day_of_month": 12,
+              "month": 2,
+              "min_temp": 6,
+              "max_temp": 10,
+              "precipitation": 90,
+              "status": "Rainy"
+            }          
+          ],
+          "_links": {
+            "self": {
+              "href": "http://localhost:8080/v1/full/SFCA_USA"
+            }         
+          }            
+         
+        }           
+  parameters:
+    locationCode:
+      name: code
+      in: path
+      schema:
+        type: string
+        example: NYC_US
+      required: true
+      description: code of the location
+    currentHour:
+      name: X-Current-Hour
+      in: header
+      schema:
+        type: number
+        example: 7
+      required: true
+      description: The current hour at the client's location
+      
+  links:
+    realtimeLinkByIP:
+      operationId: getRealtimeByIPAddress
+      description: get realtime weather data of the same location
+    realtimeLinkByCode:
+      operationId: getRealtimeByLocationCode
+      description: get realtime weather data of the same location      
+    hourlyForecastLinkByIP:
+      operationId: listHourlyForecastByIPAddress
+      description: get hourly weather forecast of the same location
+    hourlyForecastLinkByCode:
+      operationId: listHourlyForecastByLocationCode
+      description: get hourly weather forecast of the same location   
+    dailyForecastLinkByIP:
+      operationId: listDailyForecastByIPAddress
+      description: get daily weather forecast of the same location
+    dailyForecastLinkByCode:
+      operationId: listDailyForecastByLocationCode
+      description: get daily weather forecast of the same location
+    fullForecastLinkByIP:
+      operationId: getFullWeatherByIPAddress
+      description: get full weather forecast of the same location      
+    fullForecastLinkByCode:
+      operationId: getFullWeatherByLocationCode
+      description: get full weather forecast of the same location
+    locationLinkByCode:
+      operationId: getLocation
+      description: get details of the location itself
+      
+  securitySchemes:
+    OAuth:
+      type: oauth2
+      description: all endpoints are secured and clients must follow OAuth2 flow as described below
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          refreshUrl: /oauth/token/refresh
+          scopes:
+            SYSTEM: has permission to perform all kinds of HTTP request on all endpoints
+            READER: has limited access to perform GET requests on all endpoints
+            UPDATER: has right to perform GET, POST, PUT, PATCH on certain endpoints

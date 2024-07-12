@@ -69,4 +69,17 @@ public class Location {
 
     @OneToMany(mappedBy = "id.location", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DailyWeather> dailyWeathers = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return "Location{" +
+                "code='" + code + '\'' +
+                ", cityName='" + cityName + '\'' +
+                ", regionName='" + regionName + '\'' +
+                ", countryName='" + countryName + '\'' +
+                ", countryCode='" + countryCode + '\'' +
+                ", enabled=" + enabled +
+                ", trashed=" + trashed +
+                '}';
+    }
 }

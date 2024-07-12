@@ -28,7 +28,7 @@ public class MainController {
 
     private RootEntity createRootEntity() {
         RootEntity.RootEntityBuilder rootEntityBuilder = RootEntity.builder();
-        rootEntityBuilder.locationsUrl(linkTo(methodOn(LocationApiController.class).getLocations()).toString());
+        rootEntityBuilder.locationsUrl(linkTo(methodOn(LocationApiController.class).listLocations(null, null, null)).toString());
         rootEntityBuilder.locationByCodeUrl(linkTo(methodOn(LocationApiController.class).getLocation(null)).toString());
         rootEntityBuilder.realtimeWeatherByIPUrl(linkTo(methodOn(RealtimeWeatherApiController.class).getRealtimeWeatherByIPAddress(null)).toString());
         rootEntityBuilder.realtimeWeatherByCodeUrl(linkTo(methodOn(RealtimeWeatherApiController.class).getRealtimeWeatherByLocationCode(null)).toString());
